@@ -1,0 +1,274 @@
+// ------------------------------------------------------
+// Prisma Generator
+// ------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// Database Connection
+// ------------------------------------------------------
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ======================================================
+// ENUMS
+// ======================================================
+
+enum EventStatus {
+  Draft
+  Planning
+  Active
+  Completed
+  Cancelled
+  Archived
+}
+
+enum InvitationStatus {
+  Pending
+  Accepted
+  Rejected
+  Expired
+}
+
+enum TaskStatus {
+  Pending
+  InProgress
+  OnHold
+  Completed
+  Cancelled
+  Overdue
+}
+
+enum TaskPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum AssignmentStatus {
+  Assigned
+  InProgress
+  Completed
+}
+
+enum NotificationType {
+  TaskAssigned
+  TaskUpdated
+  TaskCompleted
+  DeadlineReminder
+  TaskOverdue
+  TeamInvitation
+  EventInvitation
+  GeneralAnnouncement
+}
+
+// ======================================================
+// MODELS
+// ======================================================
+
+model User {
+  userId          String   @id @default(uuid()) @db.Uuid
+  firstName       String   @db.VarChar(100)
+  lastName        String   @db.VarChar(100)
+  email           String   @unique @db.VarChar(255)
+  passwordHash    String   @db.VarChar(255)
+  phoneNumber     String   @db.VarChar(20)
+  profilePhotoUrl String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organizedEvents  Event[]       @relation("OrganizedEvents")
+  eventMemberships EventMember[]
+  invitations      Invitation[]
+
+  @@index([email])
+}
+
+model Event {
+  eventId     String      @id @default(uuid()) @db.Uuid
+  organizerId String      @db.Uuid
+  eventName   String      @db.VarChar(255)
+  description String?     @db.Text
+  venue       String      @db.VarChar(255)
+  startDate   DateTime
+  endDate     DateTime
+  status      EventStatus @default(Draft)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  organizer User @relation("OrganizedEvents", fields: [organizerId], references: [userId], onDelete: Restrict)
+
+  invitations   Invitation[]
+  members       EventMember[]
+  teams         Team[]
+  notifications Notification[] @relation("EventNotifications")
+
+  @@index([organizerId])
+  @@index([status])
+}
+
+model Invitation {
+  invitationId String           @id @default(uuid()) @db.Uuid
+  eventId      String           @db.Uuid
+  userId       String           @db.Uuid
+  status       InvitationStatus @default(Pending)
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+}
+
+model EventMember {
+  eventMemberId String   @id @default(uuid()) @db.Uuid
+  eventId       String   @db.Uuid
+  userId        String   @db.Uuid
+  joinedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  teamMembership TeamMembership?
+  createdTasks   Task[]           @relation("CreatedTasks")
+  assignedTasks  TaskAssignment[] @relation("TaskAssignmentCreator")
+  notifications  Notification[]
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model Team {
+  teamId             String   @id @default(uuid()) @db.Uuid
+  eventId            String   @db.Uuid
+  leaderMembershipId String?  @unique @db.Uuid
+  teamName           String   @db.VarChar(100)
+  description        String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  event  Event           @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
+  leader TeamMembership? @relation("TeamLeader", fields: [leaderMembershipId], references: [teamMembershipId], onDelete: SetNull)
+
+  members TeamMembership[]
+  tasks   Task[]
+
+  @@unique([eventId, teamName])
+  @@index([eventId])
+  @@index([leaderMembershipId])
+}
+
+model TeamMembership {
+  teamMembershipId String   @id @default(uuid()) @db.Uuid
+  teamId           String   @db.Uuid
+  eventMemberId    String   @db.Uuid
+  joinedAt         DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  team        Team        @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  eventMember EventMember @relation(fields: [eventMemberId], references: [eventMemberId], onDelete: Cascade)
+
+  assignedTasks TaskAssignment[] @relation("AssignedTasks")
+  leadingTeam   Team?            @relation("TeamLeader")
+
+  @@unique([eventMemberId])
+  @@index([teamId])
+  @@index([eventMemberId])
+}
+
+model Task {
+  taskId            String       @id @default(uuid()) @db.Uuid
+  teamId            String       @db.Uuid
+  createdByMemberId String       @db.Uuid
+  taskTitle         String       @db.VarChar(255)
+  description       String?      @db.Text
+  priority          TaskPriority @default(Medium)
+  status            TaskStatus   @default(Pending)
+  dueDate           DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  team      Team        @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
+  createdBy EventMember @relation("CreatedTasks", fields: [createdByMemberId], references: [eventMemberId], onDelete: Restrict)
+
+  assignments   TaskAssignment[]
+  notifications Notification[]   @relation("TaskNotifications")
+
+  @@index([teamId])
+  @@index([createdByMemberId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+}
+
+model TaskAssignment {
+  taskAssignmentId   String           @id @default(uuid()) @db.Uuid
+  taskId             String           @db.Uuid
+  teamMembershipId   String           @db.Uuid
+  assignedByMemberId String           @db.Uuid
+  assignmentStatus   AssignmentStatus @default(Assigned)
+  assignedAt         DateTime         @default(now())
+  completedAt        DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  // Relations
+  task           Task           @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  teamMembership TeamMembership @relation("AssignedTasks", fields: [teamMembershipId], references: [teamMembershipId], onDelete: Cascade)
+  assignedBy     EventMember    @relation("TaskAssignmentCreator", fields: [assignedByMemberId], references: [eventMemberId], onDelete: Restrict)
+
+  @@unique([taskId, teamMembershipId])
+  @@index([taskId])
+  @@index([teamMembershipId])
+  @@index([assignmentStatus])
+}
+
+model Notification {
+  notificationId   String           @id @default(uuid()) @db.Uuid
+  eventMemberId    String           @db.Uuid
+  relatedEventId   String?          @db.Uuid
+  relatedTaskId    String?          @db.Uuid
+  title            String           @db.VarChar(255)
+  message          String           @db.Text
+  notificationType NotificationType
+  isRead           Boolean          @default(false)
+  expiresAt        DateTime
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  eventMember  EventMember @relation(fields: [eventMemberId], references: [eventMemberId], onDelete: Cascade)
+  relatedEvent Event?      @relation("EventNotifications", fields: [relatedEventId], references: [eventId], onDelete: Cascade)
+  relatedTask  Task?       @relation("TaskNotifications", fields: [relatedTaskId], references: [taskId], onDelete: Cascade)
+
+  @@index([eventMemberId])
+  @@index([notificationType])
+  @@index([isRead])
+  @@index([expiresAt])
+  @@index([relatedEventId])
+  @@index([relatedTaskId])
+}
