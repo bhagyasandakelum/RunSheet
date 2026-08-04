@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { EventModule } from './events/event.module';
 import { InvitationModule } from './invitations/invitation.module';
 import { EventMemberModule } from './event-members/event-member.module';
+import { TeamModule } from './teams/team.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EventMemberModule } from './event-members/event-member.module';
     EventModule,
     InvitationModule,
     EventMemberModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [AppService],
