@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
+    .card { background: #ffffff; border-radius: 8px; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e1e4e8; }
+    h2 { color: #1a202c; }
+    p { color: #4a5568; line-height: 1.6; }
+    .btn { display: inline-block; background-color: #3182ce; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Event Invitation</h2>
+    <p>Hello {{recipientName}},</p>
+    <p>You have been invited to join <strong>{{eventName}}</strong> by {{organizerName}}.</p>
+    {{#if message}}<p><em>"{{message}}"</em></p>{{/if}}
+    <p>Log in to your account to accept or reject this invitation before it expires on {{expiresAt}}.</p>
+  </div>
+</body>
+</html>

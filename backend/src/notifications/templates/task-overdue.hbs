@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
+    .card { background: #ffffff; border-radius: 8px; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e1e4e8; }
+    h2 { color: #e53e3e; }
+    p { color: #4a5568; line-height: 1.6; }
+    .alert { background: #fed7d7; color: #9b2c2c; padding: 10px 14px; border-radius: 4px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Task Overdue Alert</h2>
+    <p>Hello {{recipientName}},</p>
+    <div class="alert">The task "{{taskTitle}}" is now overdue!</div>
+    <p>Original Due Date: {{dueDate}}</p>
+    <p>Please update the task status or contact your team leader immediately.</p>
+  </div>
+</body>
+</html>

@@ -12,6 +12,7 @@ import { TeamModule } from './teams/team.module';
 import { TeamMembershipModule } from './team-memberships/team-membership.module';
 import { TaskModule } from './tasks/task.module';
 import { TaskAssignmentModule } from './task-assignments/task-assignment.module';
+import { NotificationModule } from './notifications/notification.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TaskAssignmentModule } from './task-assignments/task-assignment.module'
     TeamMembershipModule,
     TaskModule,
     TaskAssignmentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

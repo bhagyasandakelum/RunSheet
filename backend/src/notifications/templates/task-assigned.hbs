@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
+    .card { background: #ffffff; border-radius: 8px; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e1e4e8; }
+    h2 { color: #2b6cb0; }
+    p { color: #4a5568; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>New Task Assigned</h2>
+    <p>Hello {{recipientName}},</p>
+    <p>You have been assigned to the task <strong>{{taskTitle}}</strong> by {{assignerName}}.</p>
+    {{#if dueDate}}<p>Due Date: {{dueDate}}</p>{{/if}}
+    <p>Log in to view task details and update your progress.</p>
+  </div>
+</body>
+</html>

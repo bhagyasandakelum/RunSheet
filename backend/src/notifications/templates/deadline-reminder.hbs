@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; }
+    .card { background: #ffffff; border-radius: 8px; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e1e4e8; }
+    h2 { color: #dd6b20; }
+    p { color: #4a5568; line-height: 1.6; }
+    .highlight { background: #feebc8; padding: 8px 12px; border-radius: 4px; display: inline-block; font-weight: bold; color: #7b341e; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Task Deadline Reminder</h2>
+    <p>Hello {{recipientName}},</p>
+    <p>This is a friendly reminder that your task <strong>{{taskTitle}}</strong> is due soon.</p>
+    <p class="highlight">Due Date: {{dueDate}}</p>
+    <p>Please make sure to complete your task on time.</p>
+  </div>
+</body>
+</html>
