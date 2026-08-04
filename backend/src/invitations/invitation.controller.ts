@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ export class InvitationController {
   @Post('events/:eventId/invitations')
   @HttpCode(HttpStatus.CREATED)
   async inviteUser(
-    @Param('eventId') eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
     @CurrentUser() user: any,
     @Body() createDto: CreateInvitationDto,
   ) {
@@ -31,7 +32,7 @@ export class InvitationController {
   @Get('events/:eventId/invitations')
   @HttpCode(HttpStatus.OK)
   async getEventInvitations(
-    @Param('eventId') eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
     @CurrentUser() user: any,
   ) {
     return this.invitationService.getEventInvitations(eventId, user.userId);
@@ -46,7 +47,7 @@ export class InvitationController {
   @Get('invitations/:id')
   @HttpCode(HttpStatus.OK)
   async getInvitationDetails(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
     return this.invitationService.getInvitationDetails(id, user.userId);
@@ -55,7 +56,7 @@ export class InvitationController {
   @Post('invitations/:id/accept')
   @HttpCode(HttpStatus.OK)
   async acceptInvitation(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
     return this.invitationService.acceptInvitation(id, user.userId);
@@ -64,7 +65,7 @@ export class InvitationController {
   @Post('invitations/:id/reject')
   @HttpCode(HttpStatus.OK)
   async rejectInvitation(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
     return this.invitationService.rejectInvitation(id, user.userId);

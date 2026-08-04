@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
@@ -39,14 +40,14 @@ export class EventController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getEventDetails(@Param('id') id: string) {
+  async getEventDetails(@Param('id', ParseUUIDPipe) id: string) {
     return this.eventService.getEventDetails(id);
   }
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async updateEvent(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
     @Body() updateEventDto: UpdateEventDto,
   ) {
@@ -56,7 +57,7 @@ export class EventController {
   @Patch(':id/status')
   @HttpCode(HttpStatus.OK)
   async updateEventStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
     @Body() updateEventStatusDto: UpdateEventStatusDto,
   ) {
@@ -66,7 +67,7 @@ export class EventController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteEvent(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: any,
   ) {
     return this.eventService.deleteEvent(id, user.userId);

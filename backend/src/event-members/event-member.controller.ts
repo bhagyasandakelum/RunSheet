@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -21,7 +22,7 @@ export class EventMemberController {
   @Get('members')
   @HttpCode(HttpStatus.OK)
   async getEventMembers(
-    @Param('eventId') eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
     @CurrentUser() user: any,
   ) {
     return this.eventMemberService.getEventMembers(eventId, user.userId);
@@ -30,7 +31,7 @@ export class EventMemberController {
   @Get('members/search')
   @HttpCode(HttpStatus.OK)
   async searchMembers(
-    @Param('eventId') eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
     @CurrentUser() user: any,
     @Query() searchDto: SearchMembersDto,
   ) {
@@ -40,7 +41,7 @@ export class EventMemberController {
   @Get('membership')
   @HttpCode(HttpStatus.OK)
   async getMyMembership(
-    @Param('eventId') eventId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
     @CurrentUser() user: any,
   ) {
     return this.eventMemberService.getMyMembership(eventId, user.userId);
@@ -49,8 +50,8 @@ export class EventMemberController {
   @Get('members/:memberId')
   @HttpCode(HttpStatus.OK)
   async getMemberDetails(
-    @Param('eventId') eventId: string,
-    @Param('memberId') memberId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
     @CurrentUser() user: any,
   ) {
     return this.eventMemberService.getMemberDetails(eventId, memberId, user.userId);
@@ -59,8 +60,8 @@ export class EventMemberController {
   @Delete('members/:memberId')
   @HttpCode(HttpStatus.OK)
   async removeMember(
-    @Param('eventId') eventId: string,
-    @Param('memberId') memberId: string,
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Param('memberId', ParseUUIDPipe) memberId: string,
     @CurrentUser() user: any,
   ) {
     return this.eventMemberService.removeMember(eventId, memberId, user.userId);
