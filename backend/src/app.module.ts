@@ -10,6 +10,8 @@ import { InvitationModule } from './invitations/invitation.module';
 import { EventMemberModule } from './event-members/event-member.module';
 import { TeamModule } from './teams/team.module';
 import { TeamMembershipModule } from './team-memberships/team-membership.module';
+import { TaskModule } from './tasks/task.module';
+import { TaskAssignmentModule } from './task-assignments/task-assignment.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { TeamMembershipModule } from './team-memberships/team-membership.module'
     EventMemberModule,
     TeamModule,
     TeamMembershipModule,
+    TaskModule,
+    TaskAssignmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
