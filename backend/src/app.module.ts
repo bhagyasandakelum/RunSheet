@@ -9,6 +9,7 @@ import { EventModule } from './events/event.module';
 import { InvitationModule } from './invitations/invitation.module';
 import { EventMemberModule } from './event-members/event-member.module';
 import { TeamModule } from './teams/team.module';
+import { TeamMembershipModule } from './team-memberships/team-membership.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TeamModule } from './teams/team.module';
     InvitationModule,
     EventMemberModule,
     TeamModule,
+    TeamMembershipModule,
   ],
   controllers: [AppController],
   providers: [AppService],
