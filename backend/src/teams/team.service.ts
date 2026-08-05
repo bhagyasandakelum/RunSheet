@@ -66,8 +66,14 @@ export class TeamService {
       throw new ForbiddenException('Only the event organizer can perform this action');
     }
 
-    if (event.status === EventStatus.Completed || event.status === EventStatus.Archived) {
-      throw new BadRequestException('Cannot modify teams in a completed or archived event');
+    if (
+      event.status === EventStatus.Completed ||
+      event.status === EventStatus.Archived ||
+      event.status === EventStatus.Cancelled
+    ) {
+      throw new BadRequestException(
+        'Cannot modify teams in a completed, archived, or cancelled event',
+      );
     }
 
     return event;
@@ -92,9 +98,12 @@ export class TeamService {
 
     if (
       team.event.status === EventStatus.Completed ||
-      team.event.status === EventStatus.Archived
+      team.event.status === EventStatus.Archived ||
+      team.event.status === EventStatus.Cancelled
     ) {
-      throw new BadRequestException('Cannot modify teams in a completed or archived event');
+      throw new BadRequestException(
+        'Cannot modify teams in a completed, archived, or cancelled event',
+      );
     }
 
     return team;

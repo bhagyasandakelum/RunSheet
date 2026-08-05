@@ -72,10 +72,11 @@ export class TeamMembershipService {
 
     if (
       team.event.status === EventStatus.Completed ||
-      team.event.status === EventStatus.Archived
+      team.event.status === EventStatus.Archived ||
+      team.event.status === EventStatus.Cancelled
     ) {
       throw new BadRequestException(
-        'Cannot modify team memberships in a completed or archived event',
+        'Cannot modify team memberships in a completed, archived, or cancelled event',
       );
     }
 
@@ -304,10 +305,11 @@ export class TeamMembershipService {
 
     if (
       membership.team.event.status === EventStatus.Completed ||
-      membership.team.event.status === EventStatus.Archived
+      membership.team.event.status === EventStatus.Archived ||
+      membership.team.event.status === EventStatus.Cancelled
     ) {
       throw new BadRequestException(
-        'Cannot modify team memberships in a completed or archived event',
+        'Cannot modify team memberships in a completed, archived, or cancelled event',
       );
     }
 
@@ -388,10 +390,11 @@ export class TeamMembershipService {
 
     if (
       membership.team.event.status === EventStatus.Completed ||
-      membership.team.event.status === EventStatus.Archived
+      membership.team.event.status === EventStatus.Archived ||
+      membership.team.event.status === EventStatus.Cancelled
     ) {
       throw new BadRequestException(
-        'Cannot modify team memberships in a completed or archived event',
+        'Cannot modify team memberships in a completed, archived, or cancelled event',
       );
     }
 

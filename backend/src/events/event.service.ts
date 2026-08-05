@@ -119,6 +119,16 @@ export class EventService {
       throw new ForbiddenException('Only the event organizer can edit this event');
     }
 
+    if (
+      event.status === EventStatus.Completed ||
+      event.status === EventStatus.Archived ||
+      event.status === EventStatus.Cancelled
+    ) {
+      throw new BadRequestException(
+        'Cannot modify a completed, archived, or cancelled event',
+      );
+    }
+
     const startDate = updateEventDto.startDate ? new Date(updateEventDto.startDate) : event.startDate;
     const endDate = updateEventDto.endDate ? new Date(updateEventDto.endDate) : event.endDate;
 

@@ -13,6 +13,7 @@ import { TeamMembershipModule } from './team-memberships/team-membership.module'
 import { TaskModule } from './tasks/task.module';
 import { TaskAssignmentModule } from './task-assignments/task-assignment.module';
 import { NotificationModule } from './notifications/notification.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { NotificationModule } from './notifications/notification.module';
     TaskModule,
     TaskAssignmentModule,
     NotificationModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
