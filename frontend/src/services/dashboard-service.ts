@@ -111,26 +111,74 @@ export interface MemberDashboard {
   recentActivities?: any[];
 }
 
-export interface EventStatistics {
-  totalMembers: number;
+export interface EventSummaryWidget {
+  eventName: string;
+  status: string;
+  venue: string;
+  startDate: string;
+  endDate: string;
+  daysRemaining: number;
   totalTeams: number;
+  totalMembers: number;
+  totalTasks: number;
+  totalTaskAssignments: number;
+}
+
+export interface TaskSummaryWidget {
+  pendingTasks: number;
+  inProgressTasks: number;
+  completedTasks: number;
+  onHoldTasks: number;
+  overdueTasks: number;
+  cancelledTasks: number;
+  completedPercentage: number;
+}
+
+export interface TeamSummaryWidget {
+  teamId?: string;
+  teamName: string;
+  leaderName: string | null;
+  memberCount: number;
   totalTasks: number;
   completedTasks: number;
   pendingTasks: number;
-  overdueTasks: number;
+  completionPercentage: number;
+  status?: "Completed" | "On Track" | "At Risk";
 }
 
 export interface OrganizerDashboard {
-  event: Event;
-  statistics: EventStatistics;
-  teamAnalytics: TeamAnalyticsItem[];
-  taskAnalytics: TaskAnalyticsData;
-  recentTimeline: TimelineItem[];
+  eventSummary: EventSummaryWidget;
+  taskSummary: TaskSummaryWidget;
+  teamSummary: TeamSummaryWidget[];
+  overallProgress: number;
+  upcomingDeadlines?: any[];
+  criticalTasks?: any[];
+  recentActivities?: any[];
+  notificationSummary?: any;
+  teamProgress?: TeamSummaryWidget[];
+}
+
+export interface EventItem {
+  eventId: string;
+  eventName: string;
+  description?: string | null;
+  venue: string;
+  startDate: string;
+  endDate: string;
+  status: string;
 }
 
 export const dashboardService = {
   async getMemberDashboard(): Promise<MemberDashboard> {
     return apiClient.get<MemberDashboard>("/dashboard/me");
+  },
+
+  async getMyEvents(): Promise<EventItem[]> {
+    return apiClient.get<EventItem[]>("/events");
+  },
+
+  async getOrganizerDashboard(eventId: string): Promise<OrganizerDashboard> {
+    return apiClient.get<OrganizerDashboard>(`/dashboard/events/${eventId}`);
   },
 
   async getMyTasks(params?: QueryParams): Promise<TaskAssignment[]> {
@@ -141,12 +189,8 @@ export const dashboardService = {
     return apiClient.get<Notification[]>("/dashboard/me/notifications", { params });
   },
 
-  async getOrganizerDashboard(eventId: string): Promise<OrganizerDashboard> {
-    return apiClient.get<OrganizerDashboard>(`/dashboard/events/${eventId}`);
-  },
-
-  async getEventStatistics(eventId: string): Promise<EventStatistics> {
-    return apiClient.get<EventStatistics>(`/dashboard/events/${eventId}/statistics`);
+  async getEventStatistics(eventId: string): Promise<any> {
+    return apiClient.get<any>(`/dashboard/events/${eventId}/statistics`);
   },
 
   async getTeamAnalytics(eventId: string): Promise<TeamAnalyticsItem[]> {
