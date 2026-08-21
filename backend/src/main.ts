@@ -4,6 +4,12 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
+try {
+  process.loadEnvFile();
+} catch {
+  // .env already loaded
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -29,7 +35,8 @@ async function bootstrap() {
   // Global Exception Filter for uniform error handling
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 5000;
   await app.listen(port);
+  console.log(`Backend server successfully listening on http://localhost:${port}`);
 }
 bootstrap();

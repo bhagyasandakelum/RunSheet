@@ -85,8 +85,12 @@ export interface OrganizerDashboardResponse {
 export interface MemberProfileWidget {
   firstName: string;
   lastName: string;
+  email?: string;
+  profilePhotoUrl?: string | null;
   team: string | null;
+  teamId?: string | null;
   event: string | null;
+  eventId?: string | null;
   isTeamLeader: boolean;
 }
 
@@ -94,6 +98,13 @@ export interface MemberTaskSummaryWidget {
   assigned: number;
   inProgress: number;
   completed: number;
+  pending: number;
+  overdue: number;
+  total: number;
+  assignedTrend?: string;
+  completedTrend?: string;
+  pendingTrend?: string;
+  overdueTrend?: string;
 }
 
 export interface MemberUpcomingDeadlineTask {
@@ -131,6 +142,47 @@ export interface MemberNotificationItem {
   createdAt: Date;
 }
 
+export interface ActiveEventWidget {
+  eventId: string;
+  eventName: string;
+  venue: string;
+  startDate: Date;
+  endDate: Date;
+  status: EventStatus;
+  isLive: boolean;
+  description?: string | null;
+}
+
+export interface TeamMemberItem {
+  userId: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePhotoUrl?: string | null;
+  isLeader: boolean;
+}
+
+export interface MyTeamWidget {
+  teamId: string;
+  teamName: string;
+  memberCount: number;
+  members: TeamMemberItem[];
+}
+
+export interface MemberActionItem {
+  taskAssignmentId: string;
+  taskId: string;
+  taskTitle: string;
+  location?: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  assignmentStatus: AssignmentStatus;
+  dueDate?: Date | null;
+  teamName: string;
+  eventName?: string;
+}
+
 export interface MemberDashboardResponse {
   profile: MemberProfileWidget;
   taskSummary: MemberTaskSummaryWidget;
@@ -138,6 +190,10 @@ export interface MemberDashboardResponse {
   highPriorityTasks: MemberHighPriorityTask[];
   progress: MemberProgressWidget;
   notifications: MemberNotificationItem[];
+  activeEvent?: ActiveEventWidget | null;
+  myTeam?: MyTeamWidget | null;
+  actionItems?: MemberActionItem[];
+  recentActivities?: TimelineActivityItem[];
 }
 
 export interface DashboardStatisticsResponse {

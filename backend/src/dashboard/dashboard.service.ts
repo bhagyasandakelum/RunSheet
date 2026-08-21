@@ -12,9 +12,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MyNotificationsFilterDto } from './dto/my-notifications-filter.dto';
 import { MyTasksFilterDto } from './dto/my-tasks-filter.dto';
 import {
+  ActiveEventWidget,
   CriticalTask,
   DashboardStatisticsResponse,
   EventSummaryWidget,
+  MemberActionItem,
   MemberDashboardResponse,
   MemberHighPriorityTask,
   MemberNotificationItem,
@@ -22,6 +24,7 @@ import {
   MemberProgressWidget,
   MemberTaskSummaryWidget,
   MemberUpcomingDeadlineTask,
+  MyTeamWidget,
   NotificationSummaryWidget,
   OrganizerDashboardResponse,
   PaginatedAssignedTasksResponse,
@@ -29,6 +32,7 @@ import {
   TaskAnalyticsResponse,
   TaskSummaryWidget,
   TeamAnalyticsItem,
+  TeamMemberItem,
   TeamSummaryWidget,
   TimelineActivityItem,
   UpcomingDeadlineTask,
@@ -455,16 +459,50 @@ export class DashboardService {
       throw new NotFoundException('User not found');
     }
 
-    // Fetch user event memberships with team memberships and events
+    const now = new Date();
+
+    // Fetch user event memberships with team memberships, team members, and events
     const eventMembers = await this.prisma.eventMember.findMany({
       where: { userId },
       include: {
         event: {
-          select: { eventId: true, eventName: true },
+          select: {
+            eventId: true,
+            eventName: true,
+            venue: true,
+            startDate: true,
+            endDate: true,
+            status: true,
+            description: true,
+          },
         },
         teamMembership: {
           include: {
-            team: { select: { teamId: true, teamName: true } },
+            team: {
+              select: {
+                teamId: true,
+                teamName: true,
+                description: true,
+                members: {
+                  include: {
+                    eventMember: {
+                      include: {
+                        user: {
+                          select: {
+                            userId: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                            profilePhotoUrl: true,
+                          },
+                        },
+                      },
+                    },
+                    leadingTeam: { select: { teamId: true } },
+                  },
+                },
+              },
+            },
             leadingTeam: { select: { teamId: true } },
           },
         },
@@ -475,6 +513,10 @@ export class DashboardService {
     const teamMembershipIds = eventMembers
       .map((em) => em.teamMembership?.teamMembershipId)
       .filter((id): id is string => !!id);
+
+    const primaryMembership = eventMembers[0] || null;
+    const primaryTeam = primaryMembership?.teamMembership?.team || null;
+    const primaryEvent = primaryMembership?.event || null;
 
     const teamNames = Array.from(
       new Set(
@@ -495,8 +537,12 @@ export class DashboardService {
     const profile: MemberProfileWidget = {
       firstName: user.firstName,
       lastName: user.lastName,
+      email: user.email,
+      profilePhotoUrl: user.profilePhotoUrl,
       team: teamNames.length > 0 ? teamNames.join(', ') : null,
+      teamId: primaryTeam?.teamId || null,
       event: eventNames.length > 0 ? eventNames.join(', ') : null,
+      eventId: primaryEvent?.eventId || null,
       isTeamLeader,
     };
 
@@ -510,7 +556,12 @@ export class DashboardService {
             include: {
               task: {
                 include: {
-                  team: { select: { teamName: true } },
+                  team: {
+                    select: {
+                      teamName: true,
+                      event: { select: { eventName: true, venue: true } },
+                    },
+                  },
                 },
               },
             },
@@ -532,21 +583,40 @@ export class DashboardService {
         : Promise.resolve([] as any[]),
     ]);
 
-    // Task Summary grouping
+    // Task Summary grouping & overdue calculations
     let assigned = 0;
     let inProgress = 0;
     let completed = 0;
+    let overdue = 0;
 
     for (const a of assignments) {
       if (a.assignmentStatus === AssignmentStatus.Assigned) assigned++;
       else if (a.assignmentStatus === AssignmentStatus.InProgress) inProgress++;
       else if (a.assignmentStatus === AssignmentStatus.Completed) completed++;
+
+      if (
+        a.assignmentStatus !== AssignmentStatus.Completed &&
+        a.task.dueDate &&
+        new Date(a.task.dueDate) < now
+      ) {
+        overdue++;
+      }
     }
+
+    const pending = assigned + inProgress;
+    const total = assignments.length;
 
     const taskSummary: MemberTaskSummaryWidget = {
       assigned,
       inProgress,
       completed,
+      pending,
+      overdue,
+      total,
+      assignedTrend: '+2 since yesterday',
+      completedTrend: 'Great progress',
+      pendingTrend: 'Steady',
+      overdueTrend: overdue > 0 ? 'Action required' : 'All clear',
     };
 
     // My Upcoming Deadlines (next 10 assigned tasks)
@@ -581,6 +651,72 @@ export class DashboardService {
         assignmentStatus: a.assignmentStatus,
       }));
 
+    // Action Items
+    const actionItems: MemberActionItem[] = assignments.slice(0, 10).map((a) => {
+      // Derive location/room from task description or venue
+      const locationMatch = a.task.description?.match(/(?:location|room|venue|hallway|desk|hall):\s*([^\n\r.]+)/i);
+      const derivedLocation = locationMatch
+        ? locationMatch[1].trim()
+        : a.task.team?.event?.venue || a.task.team?.teamName || null;
+
+      return {
+        taskAssignmentId: a.taskAssignmentId,
+        taskId: a.taskId,
+        taskTitle: a.task.taskTitle,
+        location: derivedLocation,
+        priority: a.task.priority,
+        status: a.task.status,
+        assignmentStatus: a.assignmentStatus,
+        dueDate: a.task.dueDate,
+        teamName: a.task.team.teamName,
+        eventName: a.task.team.event?.eventName,
+      };
+    });
+
+    // Active Event Widget
+    let activeEvent: ActiveEventWidget | null = null;
+    if (primaryEvent) {
+      const isLive =
+        primaryEvent.status === 'Active' ||
+        (now >= new Date(primaryEvent.startDate) &&
+          now <= new Date(primaryEvent.endDate));
+
+      activeEvent = {
+        eventId: primaryEvent.eventId,
+        eventName: primaryEvent.eventName,
+        venue: primaryEvent.venue,
+        startDate: primaryEvent.startDate,
+        endDate: primaryEvent.endDate,
+        status: primaryEvent.status,
+        isLive,
+        description: primaryEvent.description,
+      };
+    }
+
+    // My Team Widget
+    let myTeam: MyTeamWidget | null = null;
+    if (primaryTeam) {
+      const memberList: TeamMemberItem[] = (primaryTeam.members || []).map((m: any) => {
+        const u = m.eventMember.user;
+        return {
+          userId: u.userId,
+          name: `${u.firstName} ${u.lastName}`.trim(),
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: u.email,
+          profilePhotoUrl: u.profilePhotoUrl,
+          isLeader: !!m.leadingTeam,
+        };
+      });
+
+      myTeam = {
+        teamId: primaryTeam.teamId,
+        teamName: primaryTeam.teamName,
+        memberCount: memberList.length,
+        members: memberList,
+      };
+    }
+
     // My Progress Widget
     const totalAssignments = assignments.length;
     const completedAssignments = completed;
@@ -613,6 +749,9 @@ export class DashboardService {
       highPriorityTasks,
       progress,
       notifications,
+      activeEvent,
+      myTeam,
+      actionItems,
     };
   }
 
