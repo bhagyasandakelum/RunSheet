@@ -10,9 +10,9 @@ export interface HeroBannerProps {
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
-  userName = "Alex",
-  teamName = "Event Ops Team",
-  eventName = "AI Summit 2026",
+  userName = "Member",
+  teamName = "Your Team",
+  eventName = "Your Event",
   customDate,
 }) => {
   // Format today's date or use custom date matching the screenshot

@@ -11,10 +11,10 @@ export interface OrganizerHeroBannerProps {
 }
 
 export const OrganizerHeroBanner: React.FC<OrganizerHeroBannerProps> = ({
-  userName = "Alex",
-  eventName = "AI Summit 2026",
-  venue = "Moscone Center, SF",
-  daysRemaining = 15,
+  userName = "Organizer",
+  eventName = "Event Overview",
+  venue = "Venue not specified",
+  daysRemaining = 0,
   status = "Active Event",
 }) => {
   return (

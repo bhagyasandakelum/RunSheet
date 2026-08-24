@@ -11,41 +11,8 @@ export interface ActionItemsTableProps {
   onStatusChange?: (taskAssignmentId: string, newStatus: AssignmentStatus) => void;
 }
 
-const DEFAULT_ACTION_ITEMS: MemberActionItem[] = [
-  {
-    taskAssignmentId: "ta-demo-1",
-    taskId: "t-1",
-    taskTitle: "Setup Registration Desks",
-    location: "Main Hallway A",
-    priority: "High",
-    status: "InProgress",
-    assignmentStatus: "InProgress",
-    teamName: "Event Ops Team",
-  },
-  {
-    taskAssignmentId: "ta-demo-2",
-    taskId: "t-2",
-    taskTitle: "Briefing with A/V Team",
-    location: "Room 302",
-    priority: "Medium",
-    status: "Pending",
-    assignmentStatus: "Assigned",
-    teamName: "Event Ops Team",
-  },
-  {
-    taskAssignmentId: "ta-demo-3",
-    taskId: "t-3",
-    taskTitle: "Distribute Staff Radios",
-    location: "Ops HQ",
-    priority: "High",
-    status: "Completed",
-    assignmentStatus: "Completed",
-    teamName: "Event Ops Team",
-  },
-];
-
 export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
-  items = DEFAULT_ACTION_ITEMS,
+  items = [],
   onStatusChange,
 }) => {
   const [localItems, setLocalItems] = useState<MemberActionItem[]>(items);
@@ -53,9 +20,7 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
 
   // Sync with prop when it changes
   React.useEffect(() => {
-    if (items && items.length > 0) {
-      setLocalItems(items);
-    }
+    setLocalItems(items || []);
   }, [items]);
 
   const handleToggleStatus = async (item: MemberActionItem) => {
@@ -141,7 +106,7 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
     );
   };
 
-  const displayList = localItems.length > 0 ? localItems : DEFAULT_ACTION_ITEMS;
+  const displayList = localItems;
 
   return (
     <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 md:p-6 shadow-xs">
@@ -181,20 +146,27 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
-            {displayList.map((item) => (
-              <tr
-                key={item.taskAssignmentId}
-                className="group hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
-              >
-                {/* Task Title & Location */}
-                <td className="py-3.5 pr-4">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
-                    {item.taskTitle}
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                    {item.location || item.teamName || "Main Hallway A"}
-                  </p>
+            {displayList.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="py-8 text-center text-xs text-slate-400 font-medium">
+                  No action items assigned to you yet.
                 </td>
+              </tr>
+            ) : (
+              displayList.map((item) => (
+                <tr
+                  key={item.taskAssignmentId}
+                  className="group hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+                >
+                  {/* Task Title & Location */}
+                  <td className="py-3.5 pr-4">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white leading-snug">
+                      {item.taskTitle}
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                      {item.location || item.teamName || "General Area"}
+                    </p>
+                  </td>
 
                 {/* Priority */}
                 <td className="py-3.5 px-4 whitespace-nowrap">
@@ -222,9 +194,10 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
                       <span>Start</span>
                     )}
                   </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -59,15 +59,27 @@ export class TeamMembershipService {
   async addMemberToTeam(teamId: string, userId: string, addMemberDto: AddMemberDto) {
     const team = await this.prisma.team.findUnique({
       where: { teamId },
-      include: { event: true },
+      include: {
+        event: true,
+        leader: {
+          include: {
+            eventMember: true,
+          },
+        },
+      },
     });
 
     if (!team) {
       throw new NotFoundException('Team not found');
     }
 
-    if (team.event.organizerId !== userId) {
-      throw new ForbiddenException('Only the event organizer can assign members to teams');
+    const isOrganizer = team.event.organizerId === userId;
+    const isLeader = team.leader?.eventMember?.userId === userId;
+
+    if (!isOrganizer && !isLeader) {
+      throw new ForbiddenException(
+        'Only the event organizer or team leader can assign members to this team',
+      );
     }
 
     if (
@@ -80,20 +92,60 @@ export class TeamMembershipService {
       );
     }
 
-    const eventMember = await this.prisma.eventMember.findUnique({
-      where: { eventMemberId: addMemberDto.eventMemberId },
-    });
+    let targetEventMemberId = addMemberDto.eventMemberId;
 
-    if (!eventMember) {
-      throw new NotFoundException('Event member not found');
-    }
+    if (!targetEventMemberId) {
+      let targetUserId = addMemberDto.userId;
 
-    if (eventMember.eventId !== team.eventId) {
-      throw new BadRequestException('Selected member does not belong to this event');
+      if (!targetUserId && addMemberDto.email) {
+        const userByEmail = await this.prisma.user.findUnique({
+          where: { email: addMemberDto.email.toLowerCase().trim() },
+        });
+        if (!userByEmail) {
+          throw new NotFoundException('User with specified email not found');
+        }
+        targetUserId = userByEmail.userId;
+      }
+
+      if (!targetUserId) {
+        throw new BadRequestException('Must provide eventMemberId, userId, or email');
+      }
+
+      let eventMember = await this.prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: team.eventId,
+            userId: targetUserId,
+          },
+        },
+      });
+
+      if (!eventMember) {
+        eventMember = await this.prisma.eventMember.create({
+          data: {
+            eventId: team.eventId,
+            userId: targetUserId,
+          },
+        });
+      }
+
+      targetEventMemberId = eventMember.eventMemberId;
+    } else {
+      const eventMember = await this.prisma.eventMember.findUnique({
+        where: { eventMemberId: targetEventMemberId },
+      });
+
+      if (!eventMember) {
+        throw new NotFoundException('Event member not found');
+      }
+
+      if (eventMember.eventId !== team.eventId) {
+        throw new BadRequestException('Selected member does not belong to this event');
+      }
     }
 
     const existingMembership = await this.prisma.teamMembership.findUnique({
-      where: { eventMemberId: addMemberDto.eventMemberId },
+      where: { eventMemberId: targetEventMemberId },
     });
 
     if (existingMembership) {
@@ -105,7 +157,7 @@ export class TeamMembershipService {
     return this.prisma.teamMembership.create({
       data: {
         teamId,
-        eventMemberId: addMemberDto.eventMemberId,
+        eventMemberId: targetEventMemberId,
         joinedAt: new Date(),
       },
       include: {
@@ -373,8 +425,14 @@ export class TeamMembershipService {
         team: {
           include: {
             event: true,
+            leader: {
+              include: {
+                eventMember: true,
+              },
+            },
           },
         },
+        eventMember: true,
       },
     });
 
@@ -382,10 +440,18 @@ export class TeamMembershipService {
       throw new NotFoundException('Team membership not found');
     }
 
-    if (membership.team.event.organizerId !== userId) {
+    const isOrganizer = membership.team.event.organizerId === userId;
+    const isLeader = membership.team.leader?.eventMember?.userId === userId;
+
+    if (!isOrganizer && !isLeader) {
       throw new ForbiddenException(
-        'Only the event organizer can remove members from teams',
+        'Only the event organizer or team leader can remove members from this team',
       );
+    }
+
+    // Team leader cannot remove the organizer or themselves (only organizer can reassign leader)
+    if (!isOrganizer && membership.eventMember.userId === membership.team.event.organizerId) {
+      throw new ForbiddenException('Cannot remove the event organizer from the team');
     }
 
     if (

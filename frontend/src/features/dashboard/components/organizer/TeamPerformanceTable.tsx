@@ -19,35 +19,7 @@ export interface TeamPerformanceTableProps {
 }
 
 export const TeamPerformanceTable: React.FC<TeamPerformanceTableProps> = ({
-  teams = [
-    {
-      teamName: "Ops Alpha",
-      leaderName: "Sarah Jenkins",
-      memberCount: 8,
-      completedTasks: 12,
-      totalTasks: 12,
-      completionPercentage: 100,
-      status: "Completed",
-    },
-    {
-      teamName: "Tech Beta",
-      leaderName: "Marcus Chen",
-      memberCount: 12,
-      completedTasks: 18,
-      totalTasks: 20,
-      completionPercentage: 90,
-      status: "On Track",
-    },
-    {
-      teamName: "Vendor Gamma",
-      leaderName: "Elena Rodriguez",
-      memberCount: 5,
-      completedTasks: 4,
-      totalTasks: 10,
-      completionPercentage: 40,
-      status: "At Risk",
-    },
-  ],
+  teams = [],
 }) => {
   const getInitials = (name: string) => {
     return name
@@ -131,66 +103,78 @@ export const TeamPerformanceTable: React.FC<TeamPerformanceTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200">
-            {teams.map((item, idx) => {
-              const percentage =
-                item.completionPercentage ??
-                (item.totalTasks > 0
-                  ? Math.round((item.completedTasks / item.totalTasks) * 100)
-                  : 0);
+            {teams.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-8 text-center text-xs text-slate-400 font-medium">
+                  No teams created for this event yet.{" "}
+                  <Link href="/teams/create" className="text-emerald-600 font-bold hover:underline">
+                    Create a team
+                  </Link>{" "}
+                  to track performance.
+                </td>
+              </tr>
+            ) : (
+              teams.map((item, idx) => {
+                const percentage =
+                  item.completionPercentage ??
+                  (item.totalTasks > 0
+                    ? Math.round((item.completedTasks / item.totalTasks) * 100)
+                    : 0);
 
-              return (
-                <tr
-                  key={item.teamId || item.teamName}
-                  className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
-                >
-                  {/* Team Name with Initials Box */}
-                  <td className="py-3.5 flex items-center gap-2.5">
-                    <div
-                      className={`w-7 h-7 rounded-lg border flex items-center justify-center font-bold text-[11px] shrink-0 ${getAvatarStyles(
-                        idx
-                      )}`}
-                    >
-                      {getInitials(item.teamName)}
-                    </div>
-                    <span className="font-bold text-slate-900 dark:text-white">
-                      {item.teamName}
-                    </span>
-                  </td>
-
-                  {/* Leader */}
-                  <td className="py-3.5 text-slate-600 dark:text-slate-300">
-                    {item.leaderName || "Unassigned"}
-                  </td>
-
-                  {/* Members */}
-                  <td className="py-3.5 text-slate-600 dark:text-slate-300">
-                    {item.memberCount}
-                  </td>
-
-                  {/* Tasks */}
-                  <td className="py-3.5 text-slate-600 dark:text-slate-300">
-                    {item.completedTasks} / {item.totalTasks}
-                  </td>
-
-                  {/* Progress Bar */}
-                  <td className="py-3.5">
-                    <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                return (
+                  <tr
+                    key={item.teamId || item.teamName}
+                    className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    {/* Team Name with Initials Box */}
+                    <td className="py-3.5 flex items-center gap-2.5">
                       <div
-                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                        className={`h-full rounded-full transition-all duration-500 ${getProgressBarColor(
-                          percentage
+                        className={`w-7 h-7 rounded-lg border flex items-center justify-center font-bold text-[11px] shrink-0 ${getAvatarStyles(
+                          idx
                         )}`}
-                      />
-                    </div>
-                  </td>
+                      >
+                        {getInitials(item.teamName)}
+                      </div>
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {item.teamName}
+                      </span>
+                    </td>
 
-                  {/* Status Badge */}
-                  <td className="py-3.5 text-right">
-                    {getStatusBadge(item.status, percentage)}
-                  </td>
-                </tr>
-              );
-            })}
+                    {/* Leader */}
+                    <td className="py-3.5 text-slate-600 dark:text-slate-300">
+                      {item.leaderName || "Unassigned"}
+                    </td>
+
+                    {/* Members */}
+                    <td className="py-3.5 text-slate-600 dark:text-slate-300">
+                      {item.memberCount}
+                    </td>
+
+                    {/* Tasks */}
+                    <td className="py-3.5 text-slate-600 dark:text-slate-300">
+                      {item.completedTasks} / {item.totalTasks}
+                    </td>
+
+                    {/* Progress Bar */}
+                    <td className="py-3.5">
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                          className={`h-full rounded-full transition-all duration-500 ${getProgressBarColor(
+                            percentage
+                          )}`}
+                        />
+                      </div>
+                    </td>
+
+                    {/* Status Badge */}
+                    <td className="py-3.5 text-right">
+                      {getStatusBadge(item.status, percentage)}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>

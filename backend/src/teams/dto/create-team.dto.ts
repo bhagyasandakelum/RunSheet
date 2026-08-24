@@ -10,4 +10,12 @@ export class CreateTeamDto {
   @IsString({ message: 'description must be a string' })
   @MaxLength(1000, { message: 'description must not exceed 1000 characters' })
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  leaderUserId?: string;
+
+  @IsOptional()
+  @IsString()
+  leaderEventMemberId?: string;
 }

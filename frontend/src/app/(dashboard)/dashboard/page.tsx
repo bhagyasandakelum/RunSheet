@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/use-auth";
+import { useEvent } from "@/providers/event-provider";
 import {
   dashboardService,
   OrganizerDashboard,
   MemberDashboard,
-  EventItem,
 } from "@/services/dashboard-service";
 import {
-  // Organizer Components
   OrganizerHeroBanner,
   OrganizerMetricCards,
   EventProgressDonutCard,
   TaskAnalyticsCard,
   TeamPerformanceTable,
-  // Member Components
   HeroBanner,
   MetricCards,
   ActionItemsTable,
@@ -23,190 +22,194 @@ import {
   ActiveEventCard,
   LiveTimelinePanel,
 } from "@/features/dashboard";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const {
+    events,
+    selectedEventId,
+    selectedEvent,
+    userTeamName,
+    isOrganizer: isActualOrganizer,
+    isLoading: isEventsLoading,
+    setSelectedEventId,
+  } = useEvent();
 
-  // Active view: default to 'organizer' matching user's requested screenshot
+  // Active view: defaults to organizer if user organizes this event, else member
   const [viewMode, setViewMode] = useState<"organizer" | "member">("organizer");
 
   // Data states
   const [organizerData, setOrganizerData] = useState<OrganizerDashboard | null>(null);
   const [memberData, setMemberData] = useState<MemberDashboard | null>(null);
-  const [myEvents, setMyEvents] = useState<EventItem[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load events and dashboard data
   useEffect(() => {
-    let isMounted = true;
-
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch events and member dashboard in parallel
-        const [eventsRes, memberRes] = await Promise.allSettled([
-          dashboardService.getMyEvents(),
-          dashboardService.getMemberDashboard(),
-        ]);
-
-        if (!isMounted) return;
-
-        let events: EventItem[] = [];
-        if (eventsRes.status === "fulfilled" && Array.isArray(eventsRes.value)) {
-          events = eventsRes.value;
-          setMyEvents(events);
-        }
-
-        if (memberRes.status === "fulfilled" && memberRes.value) {
-          setMemberData(memberRes.value);
-        }
-
-        // If user has organized events, fetch organizer dashboard for the primary event
-        const primaryEventId = events[0]?.eventId || selectedEventId;
-        if (primaryEventId) {
-          setSelectedEventId(primaryEventId);
-          try {
-            const orgRes = await dashboardService.getOrganizerDashboard(primaryEventId);
-            if (isMounted && orgRes) {
-              setOrganizerData(orgRes);
-            }
-          } catch {
-            // Handled gracefully with fallback data
-          }
-        }
-      } catch {
-        // Fallback demo data displays smoothly
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // When selected event changes, reload organizer data
-  const handleEventChange = async (eventId: string) => {
-    setSelectedEventId(eventId);
-    try {
-      const orgRes = await dashboardService.getOrganizerDashboard(eventId);
-      if (orgRes) {
-        setOrganizerData(orgRes);
-      }
-    } catch {
-      // Preserve current view
+    if (isActualOrganizer) {
+      setViewMode("organizer");
+    } else {
+      setViewMode("member");
     }
-  };
+  }, [isActualOrganizer, selectedEventId]);
+
+  const loadDashboardData = useCallback(async () => {
+    if (!selectedEventId) {
+      setOrganizerData(null);
+      setMemberData(null);
+      setIsLoadingDashboard(false);
+      return;
+    }
+
+    try {
+      setIsLoadingDashboard(true);
+      setError(null);
+
+      const [orgRes, memRes] = await Promise.allSettled([
+        dashboardService.getOrganizerDashboard(selectedEventId),
+        dashboardService.getMemberDashboard(),
+      ]);
+
+      if (orgRes.status === "fulfilled") {
+        setOrganizerData(orgRes.value);
+      } else {
+        setOrganizerData(null);
+      }
+
+      if (memRes.status === "fulfilled") {
+        setMemberData(memRes.value);
+      } else {
+        setMemberData(null);
+      }
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to load dashboard data.");
+    } finally {
+      setIsLoadingDashboard(false);
+    }
+  }, [selectedEventId]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  if (isEventsLoading) {
+    return (
+      <div className="py-24 text-center text-xs font-semibold text-slate-400">
+        Loading your workspace...
+      </div>
+    );
+  }
+
+  // 0 Events State
+  if (events.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto py-20 px-6 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xs space-y-5">
+        <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto text-2xl">
+          📅
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            No Events Created Yet
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+            Get started by setting up your first event, organizing specialized teams, and orchestrating tasks seamlessly.
+          </p>
+        </div>
+        <div className="pt-2">
+          <Link href="/events/create">
+            <Button
+              variant="primary"
+              size="lg"
+              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs px-6"
+            >
+              + Create Your First Event
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Resolved user display name
-  const userName = user?.firstName || "Alex";
+  const userName = user ? `${user.firstName} ${user.lastName}` : "User";
 
   // Resolved Organizer stats
   const eventSummary = organizerData?.eventSummary;
   const taskSummary = organizerData?.taskSummary;
-  const teamList = organizerData?.teamSummary;
+  const teamList = organizerData?.teamSummary || [];
 
-  const eventName = eventSummary?.eventName || "AI Summit 2026";
-  const venue = eventSummary?.venue || "Moscone Center, SF";
-  const daysRemaining = eventSummary?.daysRemaining ?? 15;
+  const eventName = selectedEvent?.eventName || eventSummary?.eventName || "Event Operations";
+  const venue = selectedEvent?.venue || eventSummary?.venue || "Venue not specified";
+
+  let daysRemaining = 0;
+  if (selectedEvent?.startDate) {
+    const diffTime = new Date(selectedEvent.startDate).getTime() - new Date().getTime();
+    daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+  } else if (eventSummary?.daysRemaining !== undefined) {
+    daysRemaining = eventSummary.daysRemaining;
+  }
 
   const organizerMetrics = {
-    teamsCount: eventSummary?.totalTeams ?? 6,
-    membersCount: eventSummary?.totalMembers ?? 42,
-    totalTasks: eventSummary?.totalTasks ?? 58,
-    completedTasks: taskSummary?.completedTasks ?? 41,
-    completionPercentage: taskSummary?.completedPercentage ?? 70,
-    pendingInvites: 7,
-    overdueTasks: taskSummary?.overdueTasks ?? 3,
+    teamsCount: eventSummary?.totalTeams ?? 0,
+    membersCount: eventSummary?.totalMembers ?? 0,
+    totalTasks: eventSummary?.totalTasks ?? 0,
+    completedTasks: taskSummary?.completedTasks ?? 0,
+    completionPercentage: taskSummary?.completedPercentage ?? 0,
+    pendingInvites: 0,
+    overdueTasks: taskSummary?.overdueTasks ?? 0,
   };
 
   const statusDistribution = {
-    pending: taskSummary?.pendingTasks ?? 2,
-    inProgress: taskSummary?.inProgressTasks ?? 12,
-    completed: taskSummary?.completedTasks ?? 41,
-    overdue: taskSummary?.overdueTasks ?? 3,
+    pending: taskSummary?.pendingTasks ?? 0,
+    inProgress: taskSummary?.inProgressTasks ?? 0,
+    completed: taskSummary?.completedTasks ?? 0,
+    overdue: taskSummary?.overdueTasks ?? 0,
   };
 
   const priorityLevels = {
-    low: organizerData?.prioritySummary?.low ?? 15,
-    medium: organizerData?.prioritySummary?.medium ?? 25,
-    high: organizerData?.prioritySummary?.high ?? 12,
-    critical: organizerData?.prioritySummary?.critical ?? 6,
+    low: organizerData?.prioritySummary?.low ?? 0,
+    medium: organizerData?.prioritySummary?.medium ?? 0,
+    high: organizerData?.prioritySummary?.high ?? 0,
+    critical: organizerData?.prioritySummary?.critical ?? 0,
   };
 
-  const teamsPerformanceData =
-    teamList && teamList.length > 0
-      ? teamList.map((t) => ({
-          teamId: t.teamId,
-          teamName: t.teamName,
-          leaderName: t.leaderName || "Unassigned",
-          memberCount: t.memberCount,
-          completedTasks: t.completedTasks,
-          totalTasks: t.totalTasks,
-          completionPercentage: t.completionPercentage,
-          status:
-            t.status ||
-            (t.completionPercentage >= 100
-              ? ("Completed" as const)
-              : t.completionPercentage >= 70
-              ? ("On Track" as const)
-              : ("At Risk" as const)),
-        }))
-      : [
-          {
-            teamName: "Ops Alpha",
-            leaderName: "Sarah Jenkins",
-            memberCount: 8,
-            completedTasks: 12,
-            totalTasks: 12,
-            completionPercentage: 100,
-            status: "Completed" as const,
-          },
-          {
-            teamName: "Tech Beta",
-            leaderName: "Marcus Chen",
-            memberCount: 12,
-            completedTasks: 18,
-            totalTasks: 20,
-            completionPercentage: 90,
-            status: "On Track" as const,
-          },
-          {
-            teamName: "Vendor Gamma",
-            leaderName: "Elena Rodriguez",
-            memberCount: 5,
-            completedTasks: 4,
-            totalTasks: 10,
-            completionPercentage: 40,
-            status: "At Risk" as const,
-          },
-        ];
+  const teamsPerformanceData = teamList.map((t) => ({
+    teamId: t.teamId,
+    teamName: t.teamName,
+    leaderName: t.leaderName || "Unassigned",
+    memberCount: t.memberCount,
+    completedTasks: t.completedTasks,
+    totalTasks: t.totalTasks,
+    completionPercentage: t.completionPercentage,
+    status:
+      t.status ||
+      (t.completionPercentage >= 100
+        ? ("Completed" as const)
+        : t.completionPercentage >= 70
+        ? ("On Track" as const)
+        : ("At Risk" as const)),
+  }));
 
   // Member View statistics
-  const memberUserName = memberData?.profile?.firstName || user?.firstName || "Alex";
-  const memberTeamName = memberData?.profile?.team || "Event Ops Team";
-  const memberEventName = memberData?.profile?.event || "AI Summit 2026";
+  const memberUserName = user?.firstName || "Member";
+  const memberTeamName = userTeamName || memberData?.profile?.team || "Event Team";
+  const memberEventName = selectedEvent?.eventName || "Event Operations";
+
   const memberStats = {
-    assigned: memberData?.taskSummary?.assigned ?? 12,
-    completed: memberData?.taskSummary?.completed ?? 8,
-    pending: memberData?.taskSummary?.pending ?? 3,
-    overdue: memberData?.taskSummary?.overdue ?? 1,
-    assignedTrend: memberData?.taskSummary?.assignedTrend || "+2 since yesterday",
-    completedTrend: memberData?.taskSummary?.completedTrend || "Great progress",
-    pendingTrend: memberData?.taskSummary?.pendingTrend || "Steady",
-    overdueTrend: memberData?.taskSummary?.overdueTrend || "Action required",
+    assigned: memberData?.taskSummary?.assigned ?? 0,
+    completed: memberData?.taskSummary?.completed ?? 0,
+    pending: memberData?.taskSummary?.pending ?? 0,
+    overdue: memberData?.taskSummary?.overdue ?? 0,
+    assignedTrend: memberData?.taskSummary?.assignedTrend || "Assigned to you",
+    completedTrend: memberData?.taskSummary?.completedTrend || "Completed tasks",
+    pendingTrend: memberData?.taskSummary?.pendingTrend || "Awaiting action",
+    overdueTrend: memberData?.taskSummary?.overdueTrend || "Overdue items",
   };
 
   return (
-    <div className="space-y-6 select-none">
-      {/* Top Role / Perspective Switcher Pill */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 select-none pb-12">
+      {/* Top Role / Perspective Switcher Pill & Event Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <button
             type="button"
@@ -232,18 +235,18 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* If user organizes multiple events, quick event selector indicator */}
-        {myEvents.length > 1 && (
+        {/* Event switcher selector */}
+        {events.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400">Event:</span>
+            <span className="text-xs font-semibold text-slate-400">Switch Event:</span>
             <select
               value={selectedEventId || ""}
-              onChange={(e) => handleEventChange(e.target.value)}
-              className="px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              onChange={(e) => setSelectedEventId(e.target.value)}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 shadow-xs"
             >
-              {myEvents.map((evt) => (
+              {events.map((evt) => (
                 <option key={evt.eventId} value={evt.eventId}>
-                  {evt.eventName}
+                  📅 {evt.eventName}
                 </option>
               ))}
             </select>
@@ -251,24 +254,35 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ========================================================= */}
-      {/* 1. ORGANIZER DASHBOARD (Matching Screenshot Exactly)     */}
-      {/* ========================================================= */}
-      {viewMode === "organizer" ? (
+      {error && (
+        <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+          <span>⚠️</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {isLoadingDashboard ? (
+        <div className="py-20 text-center text-xs font-semibold text-slate-400">
+          Updating dashboard metrics...
+        </div>
+      ) : viewMode === "organizer" ? (
+        /* ========================================================= */
+        /* 1. ORGANIZER DASHBOARD                                   */
+        /* ========================================================= */
         <div className="space-y-6">
-          {/* Hero Banner: Welcome back, Alex & 3 Event Meta Cards */}
+          {/* Hero Banner with real event data */}
           <OrganizerHeroBanner
             userName={userName}
             eventName={eventName}
             venue={venue}
             daysRemaining={daysRemaining}
-            status="Active Event"
+            status={selectedEvent?.status ? `${selectedEvent.status} Event` : "Active Event"}
           />
 
-          {/* 6 Metric KPI Cards in a Horizontal Grid */}
+          {/* 6 Metric KPI Cards */}
           <OrganizerMetricCards metrics={organizerMetrics} />
 
-          {/* 2-Column Analytics Section: Event Progress Donut & Task Analytics Bar Charts */}
+          {/* 2-Column Analytics Section: Event Progress Donut & Task Analytics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <EventProgressDonutCard
               progressPercentage={organizerMetrics.completionPercentage}
@@ -276,7 +290,15 @@ export default function DashboardPage() {
               inProgress={statusDistribution.inProgress}
               pending={statusDistribution.pending}
               overdue={organizerMetrics.overdueTasks}
-              statusLabel="Excellent Progress"
+              statusLabel={
+                organizerMetrics.completionPercentage >= 100
+                  ? "Completed"
+                  : organizerMetrics.completionPercentage >= 70
+                  ? "Excellent Progress"
+                  : organizerMetrics.completionPercentage > 0
+                  ? "In Progress"
+                  : "Not Started"
+              }
             />
 
             <TaskAnalyticsCard
@@ -302,7 +324,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 space-y-6">
               <MetricCards data={memberStats} />
-              <ActionItemsTable items={memberData?.actionItems} />
+              <ActionItemsTable items={memberData?.actionItems || []} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <MyTeamCard team={memberData?.myTeam} />
                 <ActiveEventCard event={memberData?.activeEvent} />

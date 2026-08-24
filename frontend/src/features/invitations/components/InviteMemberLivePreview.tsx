@@ -10,8 +10,8 @@ export interface InviteMemberLivePreviewProps {
 }
 
 export const InviteMemberLivePreview: React.FC<InviteMemberLivePreviewProps> = ({
-  eventName = "AI Summit 2026",
-  inviteeEmail = "alex_sim@company.com",
+  eventName = "Your Event Title",
+  inviteeEmail = "member@organization.com",
   message,
 }) => {
   const currentDate = new Date().toLocaleDateString("en-US", {

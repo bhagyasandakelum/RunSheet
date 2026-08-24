@@ -21,7 +21,7 @@ import { EventService } from './event.service';
 @UseGuards(JwtAuthGuard)
 @Controller('events')
 export class EventController {
-  constructor(private readonly eventService: EventService) {}
+  constructor(private readonly eventService: EventService) { }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

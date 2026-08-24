@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
+import { useEvent } from "@/providers/event-provider";
 import { UserMenu } from "./user-menu";
 
 export interface HeaderProps {
@@ -15,13 +17,32 @@ export interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onMenuToggle,
   onSearch,
-  selectedEventName = "AI Summit 2026",
-  eventsList = [{ eventId: "default", eventName: "AI Summit 2026" }],
-  onSelectEvent,
+  selectedEventName: propEventName,
+  eventsList: propEventsList,
+  onSelectEvent: propSelectEvent,
 }) => {
+  const { events, selectedEvent, setSelectedEventId } = useEvent();
+
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
+
+  const activeEventName =
+    propEventName ||
+    selectedEvent?.eventName ||
+    (events.length > 0 ? events[0].eventName : "No Events");
+
+  const effectiveEventsList =
+    propEventsList ||
+    events.map((e) => ({ eventId: e.eventId, eventName: e.eventName }));
+
+  const handleSelect = (eventId: string) => {
+    if (propSelectEvent) {
+      propSelectEvent(eventId);
+    } else {
+      setSelectedEventId(eventId);
+    }
+  };
 
   const toggleTheme = () => {
     const root = document.documentElement;
@@ -62,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-slate-800 dark:text-slate-200 font-bold">Dashboard</span>
         </div>
 
-        {/* Event Selector Pill Dropdown matching screenshot */}
+        {/* Event Selector Pill Dropdown */}
         <div className="relative ml-2 hidden sm:block">
           <button
             type="button"
@@ -70,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <span className="text-slate-400">📅</span>
-            <span className="truncate max-w-[140px]">{selectedEventName}</span>
+            <span className="truncate max-w-[140px]">{activeEventName}</span>
             <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
             </svg>
@@ -83,28 +104,41 @@ export const Header: React.FC<HeaderProps> = ({
                 className="fixed inset-0 z-40"
                 onClick={() => setIsEventDropdownOpen(false)}
               />
-              <div className="absolute left-0 mt-1.5 w-56 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 shadow-xl p-1.5 z-50">
-                <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Select Event
+              <div className="absolute left-0 mt-1.5 w-60 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 shadow-xl p-1.5 z-50">
+                <div className="flex items-center justify-between px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span>Select Event</span>
+                  <Link
+                    href="/events/create"
+                    onClick={() => setIsEventDropdownOpen(false)}
+                    className="text-emerald-600 hover:underline capitalize"
+                  >
+                    + New Event
+                  </Link>
                 </div>
                 <div className="space-y-0.5 max-h-48 overflow-y-auto">
-                  {eventsList.map((evt) => (
-                    <button
-                      key={evt.eventId}
-                      onClick={() => {
-                        onSelectEvent?.(evt.eventId);
-                        setIsEventDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
-                        evt.eventName === selectedEventName
-                          ? "bg-emerald-500 text-white font-bold"
-                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      <span className="truncate">{evt.eventName}</span>
-                      {evt.eventName === selectedEventName && <span>✓</span>}
-                    </button>
-                  ))}
+                  {effectiveEventsList.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-slate-400 font-medium">
+                      No events found.
+                    </div>
+                  ) : (
+                    effectiveEventsList.map((evt) => (
+                      <button
+                        key={evt.eventId}
+                        onClick={() => {
+                          handleSelect(evt.eventId);
+                          setIsEventDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
+                          evt.eventName === activeEventName
+                            ? "bg-emerald-500 text-white font-bold"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        <span className="truncate">{evt.eventName}</span>
+                        {evt.eventName === activeEventName && <span>✓</span>}
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             </>

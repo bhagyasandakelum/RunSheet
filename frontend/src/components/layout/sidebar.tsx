@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useEvent } from "@/providers/event-provider";
 import { cn } from "@/lib/utils/cn";
 
 export interface NavItem {
@@ -25,10 +26,11 @@ export interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { userTeamName } = useEvent();
   const router = useRouter();
 
-  const displayName = userProfile?.name || (user ? `${user.firstName} ${user.lastName}` : "Alex Rivers");
-  const displayTeam = userProfile?.team || "Event Ops Team";
+  const displayName = userProfile?.name || (user ? `${user.firstName} ${user.lastName}` : "User");
+  const displayTeam = userProfile?.team || userTeamName || "Event Member";
   const avatarSrc = userProfile?.avatarUrl || user?.profilePhotoUrl || null;
 
   const handleLogout = () => {
@@ -56,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
       ),
     },
     {
-      label: "Event Members",
+      label: "Team Members",
       href: "/members",
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

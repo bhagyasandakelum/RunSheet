@@ -18,9 +18,9 @@ export const CreateEventForm: React.FC = () => {
   // Form State
   const [eventName, setEventName] = useState("");
   const [description, setDescription] = useState("");
-  const [venue, setVenue] = useState("Moscone Center, SF");
-  const [startDate, setStartDate] = useState("2026-10-15T09:00");
-  const [endDate, setEndDate] = useState("2026-10-18T17:00");
+  const [venue, setVenue] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<EventStatus>(EventStatus.Planning);
 
   // Status & Validation

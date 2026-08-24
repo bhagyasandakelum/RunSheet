@@ -17,7 +17,7 @@ import {
 
 @Injectable()
 export class TeamService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Helper: Verify user is organizer or event member for read access.
@@ -80,6 +80,46 @@ export class TeamService {
   }
 
   /**
+   * Helper: Verify team exists, user is organizer or team leader, and event is not locked.
+   */
+  private async verifyTeamModificationAccess(teamId: string, userId: string) {
+    const team = await this.prisma.team.findUnique({
+      where: { teamId },
+      include: {
+        event: true,
+        leader: {
+          include: {
+            eventMember: true,
+          },
+        },
+      },
+    });
+
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const isOrganizer = team.event.organizerId === userId;
+    const isLeader = team.leader?.eventMember?.userId === userId;
+
+    if (!isOrganizer && !isLeader) {
+      throw new ForbiddenException('Only the event organizer or team leader can edit this team');
+    }
+
+    if (
+      team.event.status === EventStatus.Completed ||
+      team.event.status === EventStatus.Archived ||
+      team.event.status === EventStatus.Cancelled
+    ) {
+      throw new BadRequestException(
+        'Cannot modify teams in a completed, archived, or cancelled event',
+      );
+    }
+
+    return { team, isOrganizer, isLeader };
+  }
+
+  /**
    * Helper: Verify team exists, user is organizer, and event is not locked.
    */
   private async verifyTeamAndOrganizerAccess(teamId: string, userId: string) {
@@ -131,13 +171,89 @@ export class TeamService {
       );
     }
 
-    return this.prisma.team.create({
-      data: {
-        eventId,
-        teamName: createTeamDto.teamName,
-        description: createTeamDto.description || null,
-        leaderMembershipId: null,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const team = await tx.team.create({
+        data: {
+          eventId,
+          teamName: createTeamDto.teamName,
+          description: createTeamDto.description || null,
+          leaderMembershipId: null,
+        },
+      });
+
+      let leaderEventMemberId = createTeamDto.leaderEventMemberId;
+
+      if (!leaderEventMemberId && createTeamDto.leaderUserId) {
+        let member = await tx.eventMember.findUnique({
+          where: {
+            eventId_userId: {
+              eventId,
+              userId: createTeamDto.leaderUserId,
+            },
+          },
+        });
+
+        if (!member) {
+          member = await tx.eventMember.create({
+            data: {
+              eventId,
+              userId: createTeamDto.leaderUserId,
+            },
+          });
+        }
+
+        leaderEventMemberId = member.eventMemberId;
+      }
+
+      if (leaderEventMemberId) {
+        const existingMembership = await tx.teamMembership.findUnique({
+          where: { eventMemberId: leaderEventMemberId },
+        });
+
+        let membership = existingMembership;
+        if (!membership) {
+          membership = await tx.teamMembership.create({
+            data: {
+              teamId: team.teamId,
+              eventMemberId: leaderEventMemberId,
+            },
+          });
+        }
+
+        await tx.team.update({
+          where: { teamId: team.teamId },
+          data: { leaderMembershipId: membership.teamMembershipId },
+        });
+      }
+
+      return tx.team.findUnique({
+        where: { teamId: team.teamId },
+        include: {
+          leader: {
+            include: {
+              eventMember: {
+                include: {
+                  user: {
+                    select: {
+                      userId: true,
+                      firstName: true,
+                      lastName: true,
+                      email: true,
+                      profilePhotoUrl: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              members: true,
+              tasks: true,
+            },
+          },
+        },
+      });
     });
   }
 
@@ -186,10 +302,10 @@ export class TeamService {
 
       const leaderInfo = team.leader && leaderUser
         ? {
-            teamMembershipId: team.leader.teamMembershipId,
-            eventMemberId: team.leader.eventMemberId,
-            user: leaderUser,
-          }
+          teamMembershipId: team.leader.teamMembershipId,
+          eventMemberId: team.leader.eventMemberId,
+          user: leaderUser,
+        }
         : null;
 
       return {
@@ -267,10 +383,10 @@ export class TeamService {
 
     const leaderInfo = team.leader && leaderUser
       ? {
-          teamMembershipId: team.leader.teamMembershipId,
-          eventMemberId: team.leader.eventMemberId,
-          user: leaderUser,
-        }
+        teamMembershipId: team.leader.teamMembershipId,
+        eventMemberId: team.leader.eventMemberId,
+        user: leaderUser,
+      }
       : null;
 
     return {
@@ -294,7 +410,7 @@ export class TeamService {
    * PATCH /teams/:teamId
    */
   async updateTeam(teamId: string, userId: string, updateTeamDto: UpdateTeamDto) {
-    const team = await this.verifyTeamAndOrganizerAccess(teamId, userId);
+    const { team } = await this.verifyTeamModificationAccess(teamId, userId);
 
     if (updateTeamDto.teamName && updateTeamDto.teamName !== team.teamName) {
       const existingTeam = await this.prisma.team.findUnique({
@@ -486,10 +602,10 @@ export class TeamService {
 
       const leaderInfo = team.leader && leaderUser
         ? {
-            teamMembershipId: team.leader.teamMembershipId,
-            eventMemberId: team.leader.eventMemberId,
-            user: leaderUser,
-          }
+          teamMembershipId: team.leader.teamMembershipId,
+          eventMemberId: team.leader.eventMemberId,
+          user: leaderUser,
+        }
         : null;
 
       return {
@@ -517,10 +633,10 @@ export class TeamService {
 
       const leaderInfo = team.leader && leaderUser
         ? {
-            teamMembershipId: team.leader.teamMembershipId,
-            eventMemberId: team.leader.eventMemberId,
-            user: leaderUser,
-          }
+          teamMembershipId: team.leader.teamMembershipId,
+          eventMemberId: team.leader.eventMemberId,
+          user: leaderUser,
+        }
         : null;
 
       return {

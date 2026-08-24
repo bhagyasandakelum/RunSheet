@@ -7,52 +7,28 @@ export interface MyTeamCardProps {
   team?: MyTeamWidget | null;
 }
 
-const DEFAULT_TEAM: MyTeamWidget = {
-  teamId: "team-demo-1",
-  teamName: "Ops Alpha Squad",
-  memberCount: 6,
-  members: [
-    {
-      userId: "u-1",
-      name: "Sarah Chen",
-      firstName: "Sarah",
-      lastName: "Chen",
-      email: "sarah@runsheet.app",
-      profilePhotoUrl: null,
-      isLeader: true,
-    },
-    {
-      userId: "u-2",
-      name: "Marcus Vance",
-      firstName: "Marcus",
-      lastName: "Vance",
-      email: "marcus@runsheet.app",
-      profilePhotoUrl: null,
-      isLeader: false,
-    },
-    {
-      userId: "u-3",
-      name: "Elena Rostova",
-      firstName: "Elena",
-      lastName: "Rostova",
-      email: "elena@runsheet.app",
-      profilePhotoUrl: null,
-      isLeader: false,
-    },
-  ],
-};
-
 export const MyTeamCard: React.FC<MyTeamCardProps> = ({ team }) => {
-  const activeTeam = team && team.teamName ? team : DEFAULT_TEAM;
-  const members = activeTeam.members && activeTeam.members.length > 0 ? activeTeam.members : DEFAULT_TEAM.members;
-  const overflowCount = Math.max(0, (activeTeam.memberCount || members.length + 3) - 3);
+  if (!team || !team.teamName) {
+    return (
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 shadow-xs flex flex-col justify-center items-center text-center min-h-[160px]">
+        <p className="text-xs text-slate-400 font-medium">You haven&apos;t been assigned to a team yet.</p>
+      </div>
+    );
+  }
 
-  // Curated stock avatar URLs or initials
-  const mockAvatarImages = [
-    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-  ];
+  const activeTeam = team;
+  const members = activeTeam.members || [];
+  const overflowCount = Math.max(0, (activeTeam.memberCount || members.length) - 3);
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
 
   return (
     <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-br from-sky-100/60 via-teal-50/40 to-slate-50/60 dark:from-slate-800/80 dark:via-slate-850 dark:to-slate-900/90 p-5 shadow-xs flex flex-col justify-between min-h-[160px]">
@@ -72,19 +48,22 @@ export const MyTeamCard: React.FC<MyTeamCardProps> = ({ team }) => {
       {/* Overlapping Avatar Stack */}
       <div className="flex items-center -space-x-2 mt-4">
         {members.slice(0, 3).map((member, idx) => {
-          const avatarUrl = member.profilePhotoUrl || mockAvatarImages[idx % mockAvatarImages.length];
           return (
             <div
               key={member.userId || idx}
-              className="relative inline-block w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 overflow-hidden bg-slate-200 dark:bg-slate-700"
+              className="relative inline-block w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 overflow-hidden bg-emerald-700 text-white flex items-center justify-center text-xs font-bold shrink-0"
               title={member.name || `${member.firstName} ${member.lastName}`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={avatarUrl}
-                alt={member.name}
-                className="w-full h-full object-cover"
-              />
+              {member.profilePhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={member.profilePhotoUrl}
+                  alt={member.name || "Member"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{getInitials(member.name || `${member.firstName} ${member.lastName}`)}</span>
+              )}
             </div>
           );
         })}

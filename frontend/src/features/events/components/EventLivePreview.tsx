@@ -15,13 +15,13 @@ export interface EventLivePreviewProps {
 }
 
 export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
-  eventName = "AI Summit 2026",
-  venue = "Moscone Center, SF",
+  eventName = "Your Event Title",
+  venue = "Venue / Location",
   startDate,
   endDate,
   status = EventStatus.Planning,
   description,
-  progress = 68,
+  progress = 0,
 }) => {
   // Format date for badge
   const parseDate = (dateStr?: string) => {
@@ -40,8 +40,8 @@ export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
 
   const monthShort = start
     ? start.toLocaleString("default", { month: "short" }).toUpperCase()
-    : "OCT";
-  const dayNumber = start ? start.getDate() : "12";
+    : "DATE";
+  const dayNumber = start ? start.getDate() : "--";
 
   const formatTimeRange = () => {
     if (start && end) {
@@ -55,7 +55,7 @@ export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
       });
       return `${startTime} - ${endTime}`;
     }
-    return "09:00 AM - 05:00 PM";
+    return "Time to be set";
   };
 
   const getStatusVariant = (st?: string) => {

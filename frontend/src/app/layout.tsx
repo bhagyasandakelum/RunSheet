@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
+import { EventProvider } from "@/providers/event-provider";
 import { ToastProvider } from "@/providers/toast-provider";
 
 const poppins = Poppins({
@@ -38,9 +39,11 @@ export default function RootLayout({
     <html lang="en" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
         <AuthProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
+          <EventProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </EventProvider>
         </AuthProvider>
       </body>
     </html>

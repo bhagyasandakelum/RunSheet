@@ -8,21 +8,20 @@ export interface ActiveEventCardProps {
   event?: ActiveEventWidget | null;
 }
 
-const DEFAULT_EVENT: ActiveEventWidget = {
-  eventId: "event-demo-1",
-  eventName: "AI Summit 2026",
-  venue: "Moscone Center, SF",
-  startDate: "2026-10-24T09:00:00.000Z",
-  endDate: "2026-10-26T18:00:00.000Z",
-  status: "Active",
-  isLive: true,
-};
-
 export const ActiveEventCard: React.FC<ActiveEventCardProps> = ({ event }) => {
-  const activeEvent = event && event.eventName ? event : DEFAULT_EVENT;
+  if (!event || !event.eventName) {
+    return (
+      <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 shadow-xs flex flex-col justify-center items-center text-center min-h-[160px]">
+        <p className="text-xs text-slate-400 font-medium">No active event details available.</p>
+      </div>
+    );
+  }
+
+  const activeEvent = event;
 
   // Format date range
-  const formatEventDates = (startStr: string, endStr: string) => {
+  const formatEventDates = (startStr?: string, endStr?: string) => {
+    if (!startStr || !endStr) return "Dates to be announced";
     try {
       const start = new Date(startStr);
       const end = new Date(endStr);
@@ -36,7 +35,7 @@ export const ActiveEventCard: React.FC<ActiveEventCardProps> = ({ event }) => {
       }
       return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
     } catch {
-      return "Oct 24 - Oct 26";
+      return "Dates to be announced";
     }
   };
 

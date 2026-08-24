@@ -4,6 +4,8 @@ import { Team } from "@/types/common/entities";
 export interface CreateTeamDto {
   teamName: string;
   description?: string;
+  leaderUserId?: string;
+  leaderEventMemberId?: string;
 }
 
 export interface UpdateTeamDto {

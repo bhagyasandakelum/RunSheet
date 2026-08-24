@@ -2,7 +2,9 @@ import { apiClient } from "./api/api-client";
 import { EventMember, TeamMembership } from "@/types/common/entities";
 
 export interface AddMemberDto {
-  eventMemberId: string;
+  eventMemberId?: string;
+  userId?: string;
+  email?: string;
 }
 
 export interface TransferMemberDto {

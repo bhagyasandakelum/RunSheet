@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { eventMemberService } from "@/services/event-member-service";
-import { eventService } from "@/services/event-service";
 import { teamService } from "@/services/team-service";
-import { Event } from "@/types/common/entities";
+import { useEvent } from "@/providers/event-provider";
 import { Button } from "@/components/ui/button";
 import { EventMembersStatsCards } from "./EventMembersStatsCards";
 import { EventMembersTable, FormattedMember } from "./EventMembersTable";
@@ -17,96 +16,114 @@ export interface EventMembersViewProps {
 }
 
 export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEventId }) => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>(initialEventId || "");
+  const { events, selectedEventId: globalEventId, setSelectedEventId } = useEvent();
+
+  const [selectedEventId, setLocalSelectedEventId] = useState<string>(
+    initialEventId || globalEventId || ""
+  );
   const [members, setMembers] = useState<FormattedMember[]>([]);
   const [teamsList, setTeamsList] = useState<string[]>([]);
   const [teamDistribution, setTeamDistribution] = useState<TeamDistributionItem[]>([]);
+  const [totalTasksCount, setTotalTasksCount] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (globalEventId && !initialEventId) {
+      setLocalSelectedEventId(globalEventId);
+    }
+  }, [globalEventId, initialEventId]);
+
   const loadData = useCallback(async () => {
+    const activeId = selectedEventId || globalEventId;
+    if (!activeId) {
+      setMembers([]);
+      setTeamsList([]);
+      setTeamDistribution([]);
+      setTotalTasksCount(0);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
 
-      const eventsList = await eventService.getMyEvents();
-      setEvents(eventsList);
+      const [membersData, teamsData] = await Promise.allSettled([
+        eventMemberService.getEventMembers(activeId),
+        teamService.getTeamsByEvent(activeId),
+      ]);
 
-      const activeId = selectedEventId || (eventsList.length > 0 ? eventsList[0].eventId : "");
-      if (activeId) {
-        setSelectedEventId(activeId);
+      if (membersData.status === "fulfilled") {
+        const rawMembers: FormattedMember[] = (membersData.value as any) || [];
+        setMembers(rawMembers);
 
-        const [membersData, teamsData] = await Promise.allSettled([
-          eventMemberService.getEventMembers(activeId),
-          teamService.getTeamsByEvent(activeId),
-        ]);
+        // Compute team distribution
+        const counts: Record<string, number> = {};
+        let unassigned = 0;
 
-        if (membersData.status === "fulfilled") {
-          const rawMembers: FormattedMember[] = (membersData.value as any) || [];
-          setMembers(rawMembers);
-
-          // Compute team distribution
-          const counts: Record<string, number> = {};
-          let unassigned = 0;
-
-          rawMembers.forEach((m) => {
-            if (m.teamName) {
-              counts[m.teamName] = (counts[m.teamName] || 0) + 1;
-            } else {
-              unassigned += 1;
-            }
-          });
-
-          const palette = ["#38bdf8", "#22c55e", "#f59e0b", "#a855f7", "#ec4899", "#6366f1"];
-          const dist: TeamDistributionItem[] = Object.keys(counts).map((tName, i) => ({
-            teamName: tName,
-            memberCount: counts[tName],
-            color: palette[i % palette.length],
-          }));
-
-          if (unassigned > 0) {
-            dist.push({
-              teamName: "Unassigned",
-              memberCount: unassigned,
-              color: "#94a3b8",
-            });
+        rawMembers.forEach((m) => {
+          if (m.teamName) {
+            counts[m.teamName] = (counts[m.teamName] || 0) + 1;
+          } else {
+            unassigned += 1;
           }
+        });
 
-          setTeamDistribution(dist);
+        const palette = ["#38bdf8", "#22c55e", "#f59e0b", "#a855f7", "#ec4899", "#6366f1"];
+        const dist: TeamDistributionItem[] = Object.keys(counts).map((tName, i) => ({
+          teamName: tName,
+          memberCount: counts[tName],
+          color: palette[i % palette.length],
+        }));
+
+        if (unassigned > 0) {
+          dist.push({
+            teamName: "Unassigned",
+            memberCount: unassigned,
+            color: "#94a3b8",
+          });
         }
 
-        if (teamsData.status === "fulfilled") {
-          setTeamsList((teamsData.value as any[]).map((t) => t.teamName));
-        }
+        setTeamDistribution(dist);
+      }
+
+      if (teamsData.status === "fulfilled") {
+        const teamItems = (teamsData.value as any[]) || [];
+        setTeamsList(teamItems.map((t) => t.teamName));
+        const tasksSum = teamItems.reduce((acc, t) => acc + (t.taskCount || t.tasks?.length || 0), 0);
+        setTotalTasksCount(tasksSum);
       }
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to load event members.");
     } finally {
       setIsLoading(false);
     }
-  }, [selectedEventId]);
+  }, [selectedEventId, globalEventId]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   const handleEventChange = (eventId: string) => {
+    setLocalSelectedEventId(eventId);
     setSelectedEventId(eventId);
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    if (!selectedEventId) return;
-    await eventMemberService.removeMember(selectedEventId, memberId);
+    const activeId = selectedEventId || globalEventId;
+    if (!activeId) return;
+    await eventMemberService.removeMember(activeId, memberId);
     loadData();
   };
 
   const handleExport = () => {
+    const activeId = selectedEventId || globalEventId;
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(members, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `event_members_${selectedEventId || "export"}.json`);
+    downloadAnchor.setAttribute("download", `team_members_${activeId || "export"}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -116,7 +133,6 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
   const totalMembersCount = members.length;
   const teamsAssignedCount = members.filter((m) => Boolean(m.teamName)).length;
   const unassignedCount = members.filter((m) => !m.teamName).length;
-  const totalTasksCount = Math.round(totalMembersCount * 1.8);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -124,10 +140,10 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Event Members
+            Team Members
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
-            Manage volunteers and staffing allocations participating in this event.
+            Manage volunteers and staffing allocations participating across specialized teams in this event.
           </p>
         </div>
 

@@ -75,10 +75,15 @@ export interface Team {
   createdAt: string;
   updatedAt: string;
 
+  // Computed / Response properties
+  leaderName?: string | null;
+  memberCount?: number;
+  taskCount?: number;
+
   // Relations
   event?: Event;
-  leader?: TeamMembership | null;
-  members?: TeamMembership[];
+  leader?: TeamMembership | any | null;
+  members?: TeamMembership[] | any[];
   tasks?: Task[];
 }
 
