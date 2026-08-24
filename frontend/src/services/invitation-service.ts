@@ -3,6 +3,7 @@ import { Invitation } from "@/types/common/entities";
 
 export interface CreateInvitationDto {
   email: string;
+  message?: string;
 }
 
 export const invitationService = {

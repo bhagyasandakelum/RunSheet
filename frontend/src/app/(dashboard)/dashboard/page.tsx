@@ -134,10 +134,10 @@ export default function DashboardPage() {
   };
 
   const priorityLevels = {
-    low: 15,
-    medium: 25,
-    high: 12,
-    critical: 6,
+    low: organizerData?.prioritySummary?.low ?? 15,
+    medium: organizerData?.prioritySummary?.medium ?? 25,
+    high: organizerData?.prioritySummary?.high ?? 12,
+    critical: organizerData?.prioritySummary?.critical ?? 6,
   };
 
   const teamsPerformanceData =

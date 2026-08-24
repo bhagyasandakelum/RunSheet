@@ -149,6 +149,12 @@ export interface TeamSummaryWidget {
 export interface OrganizerDashboard {
   eventSummary: EventSummaryWidget;
   taskSummary: TaskSummaryWidget;
+  prioritySummary?: {
+    low: number;
+    medium: number;
+    high: number;
+    critical: number;
+  };
   teamSummary: TeamSummaryWidget[];
   overallProgress: number;
   upcomingDeadlines?: any[];

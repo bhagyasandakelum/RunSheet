@@ -70,9 +70,17 @@ export interface NotificationSummaryWidget {
   readNotifications: number;
 }
 
+export interface TaskPriorityWidget {
+  low: number;
+  medium: number;
+  high: number;
+  critical: number;
+}
+
 export interface OrganizerDashboardResponse {
   eventSummary: EventSummaryWidget;
   taskSummary: TaskSummaryWidget;
+  prioritySummary?: TaskPriorityWidget;
   teamSummary: TeamSummaryWidget[];
   overallProgress: number;
   upcomingDeadlines: UpcomingDeadlineTask[];

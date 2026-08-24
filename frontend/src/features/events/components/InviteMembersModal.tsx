@@ -1,0 +1,119 @@
+"use client";
+
+import React, { useState } from "react";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { invitationService } from "@/services/invitation-service";
+
+export interface InviteMembersModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  eventId: string;
+  eventName: string;
+  onSuccess?: () => void;
+}
+
+export const InviteMembersModal: React.FC<InviteMembersModalProps> = ({
+  isOpen,
+  onClose,
+  eventId,
+  eventName,
+  onSuccess,
+}) => {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      await invitationService.inviteUser(eventId, { email: email.trim() });
+      setSuccessMessage(`Invitation successfully sent to ${email.trim()}!`);
+      setEmail("");
+      onSuccess?.();
+      setTimeout(() => {
+        setSuccessMessage(null);
+        onClose();
+      }, 1500);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to send invitation.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Invite Team Members"
+      description={`Send email invitations to join "${eventName}".`}
+      maxWidth="md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        {successMessage ? (
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+            <span>✓</span>
+            <span>{successMessage}</span>
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        ) : null}
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            Member Email Address
+          </label>
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            placeholder="colleague@example.com"
+            disabled={isLoading}
+            autoFocus
+          />
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+            The recipient will receive an invitation link valid for 7 days.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-3">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            isLoading={isLoading}
+          >
+            Send Invitation
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+};

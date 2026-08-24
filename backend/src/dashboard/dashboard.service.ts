@@ -427,6 +427,25 @@ export class DashboardService {
     );
     const recentActivities = activities.slice(0, 20);
 
+    let lowPriority = 0;
+    let mediumPriority = 0;
+    let highPriority = 0;
+    let criticalPriority = 0;
+
+    for (const t of tasks) {
+      if (t.priority === TaskPriority.Low) lowPriority++;
+      else if (t.priority === TaskPriority.Medium) mediumPriority++;
+      else if (t.priority === TaskPriority.High) highPriority++;
+      else if (t.priority === TaskPriority.Critical) criticalPriority++;
+    }
+
+    const prioritySummary = {
+      low: lowPriority,
+      medium: mediumPriority,
+      high: highPriority,
+      critical: criticalPriority,
+    };
+
     const notificationSummary: NotificationSummaryWidget = {
       totalNotifications,
       unreadNotifications,
@@ -436,6 +455,7 @@ export class DashboardService {
     return {
       eventSummary,
       taskSummary,
+      prioritySummary,
       teamSummary: teamSummaryList,
       overallProgress: completedPercentage,
       upcomingDeadlines,

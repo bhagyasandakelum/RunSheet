@@ -12,7 +12,7 @@ import { UpdateEventStatusDto } from './dto/update-event-status.dto';
 
 @Injectable()
 export class EventService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private readonly allowedStatusTransitions: Record<EventStatus, EventStatus[]> = {
     [EventStatus.Draft]: [EventStatus.Planning, EventStatus.Cancelled],
