@@ -8,6 +8,7 @@ export interface CreateTaskDto {
   description?: string;
   priority?: TaskPriority;
   dueDate?: string;
+  assignedMembershipIds?: string[];
 }
 
 export interface UpdateTaskDto {

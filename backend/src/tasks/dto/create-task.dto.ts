@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, IsDateString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, IsDateString, IsArray } from 'class-validator';
 import { TaskPriority } from '@prisma/client';
 
 export class CreateTaskDto {
@@ -19,4 +19,10 @@ export class CreateTaskDto {
   @IsOptional()
   @IsDateString({}, { message: 'dueDate must be a valid ISO date string' })
   dueDate?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'assignedMembershipIds must be an array of strings' })
+  @IsString({ each: true, message: 'Each assignedMembershipId must be a string' })
+  assignedMembershipIds?: string[];
 }
+

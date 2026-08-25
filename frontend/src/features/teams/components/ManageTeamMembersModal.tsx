@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { teamMembershipService } from "@/services/team-membership-service";
+import { teamService } from "@/services/team-service";
 import { Team, TeamMembership } from "@/types/common/entities";
 import { Button } from "@/components/ui/button";
 import { AddTeamMemberModal } from "./AddTeamMemberModal";
@@ -24,6 +25,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
   onUpdated,
 }) => {
   const [members, setMembers] = useState<TeamMembership[]>([]);
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(team);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -31,27 +33,63 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
 
   const canManage = isOrganizer || isTeamLeader;
 
+  useEffect(() => {
+    setCurrentTeam(team);
+  }, [team]);
+
   const loadMembers = useCallback(async () => {
-    if (!team) return;
+    if (!currentTeam) return;
     try {
       setIsLoading(true);
       setError(null);
-      const data = await teamMembershipService.getTeamMembers(team.teamId);
-      setMembers(data || []);
+      const [membersData, teamData] = await Promise.allSettled([
+        teamMembershipService.getTeamMembers(currentTeam.teamId),
+        teamService.getTeamDetails(currentTeam.teamId),
+      ]);
+      if (membersData.status === "fulfilled") {
+        setMembers(membersData.value || []);
+      }
+      if (teamData.status === "fulfilled") {
+        setCurrentTeam(teamData.value);
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to load team members.");
     } finally {
       setIsLoading(false);
     }
-  }, [team]);
+  }, [currentTeam]);
 
   useEffect(() => {
-    if (isOpen && team) {
+    if (isOpen && currentTeam) {
       loadMembers();
     }
-  }, [isOpen, team, loadMembers]);
+  }, [isOpen, currentTeam?.teamId]);
 
-  if (!isOpen || !team) return null;
+  if (!isOpen || !currentTeam) return null;
+
+  const handleAssignLeader = async (membershipId: string) => {
+    try {
+      setError(null);
+      await teamService.assignTeamLeader(currentTeam.teamId, {
+        teamMembershipId: membershipId,
+      });
+      await loadMembers();
+      onUpdated?.();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to set team leader.");
+    }
+  };
+
+  const handleRemoveLeader = async () => {
+    try {
+      setError(null);
+      await teamService.removeTeamLeader(currentTeam.teamId);
+      await loadMembers();
+      onUpdated?.();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to remove team leader.");
+    }
+  };
 
   const handleRemoveMember = async (membershipId: string) => {
     try {
@@ -74,10 +112,10 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
 
   const memberUserIds = members.map((m: any) => m.eventMember?.userId || m.userId).filter(Boolean);
 
-  const leaderObj = team.leader as any;
+  const leaderObj = currentTeam.leader as any;
   const leaderUser = leaderObj?.eventMember?.user || leaderObj?.user;
   const leaderName =
-    team.leaderName ||
+    currentTeam.leaderName ||
     (leaderUser ? `${leaderUser.firstName} ${leaderUser.lastName}` : "No Leader Assigned");
 
   return (
@@ -97,7 +135,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
                   Team Operations
                 </span>
                 <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span className="text-xs font-semibold text-slate-500">{team.teamName}</span>
+                <span className="text-xs font-semibold text-slate-500">{currentTeam.teamName}</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1 tracking-tight">
                 Manage Team Members
@@ -149,7 +187,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
                     Team Overview
                   </p>
                   <p className="text-lg font-black text-slate-900 dark:text-white mt-1">
-                    {team.teamName}
+                    {currentTeam.teamName}
                   </p>
                 </div>
 
@@ -175,7 +213,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
                 </div>
 
                 <div className="p-3 rounded-xl bg-white/70 dark:bg-slate-900/60 border border-emerald-500/10 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
-                  ℹ️ All team operations are strictly scoped to <span className="font-bold">{team.teamName}</span>. Team leader and organizer can add or remove members.
+                  ℹ️ All team operations are strictly scoped to <span className="font-bold">{currentTeam.teamName}</span>. Team leader and organizer can add or remove members.
                 </div>
               </div>
             </div>
@@ -215,7 +253,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
                   filteredMembers.map((m: any) => {
                     const user = m.eventMember?.user || m.user || {};
                     const isLeader =
-                      team.leaderMembershipId === m.teamMembershipId || m.isLeader;
+                      currentTeam.leaderMembershipId === m.teamMembershipId || m.isLeader;
                     const name =
                       user.firstName && user.lastName
                         ? `${user.firstName} ${user.lastName}`
@@ -263,17 +301,39 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
                           </div>
                         </div>
 
-                        {canManage && !isLeader && (
-                          <button
-                            onClick={() => handleRemoveMember(m.teamMembershipId)}
-                            className="text-xs text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-1.5 rounded-lg transition-colors"
-                            title="Remove member from team"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        )}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isOrganizer && !isLeader && (
+                            <button
+                              onClick={() => handleAssignLeader(m.teamMembershipId)}
+                              className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 px-2 py-1 rounded-lg transition-colors border border-emerald-500/20"
+                              title="Assign as Team Leader"
+                            >
+                              Make Leader
+                            </button>
+                          )}
+
+                          {isOrganizer && isLeader && (
+                            <button
+                              onClick={handleRemoveLeader}
+                              className="text-[11px] font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 px-2 py-1 rounded-lg transition-colors border border-amber-500/20"
+                              title="Remove Team Leader status"
+                            >
+                              Demote
+                            </button>
+                          )}
+
+                          {canManage && !isLeader && (
+                            <button
+                              onClick={() => handleRemoveMember(m.teamMembershipId)}
+                              className="text-xs text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-1.5 rounded-lg transition-colors"
+                              title="Remove member from team"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -299,7 +359,7 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
       {/* Add Member Sub-Modal */}
       <AddTeamMemberModal
         isOpen={isAddOpen}
-        team={team}
+        team={currentTeam}
         currentMemberUserIds={memberUserIds}
         onClose={() => setIsAddOpen(false)}
         onSuccess={() => {
@@ -310,3 +370,4 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
     </>
   );
 };
+

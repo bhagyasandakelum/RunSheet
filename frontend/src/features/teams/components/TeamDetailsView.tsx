@@ -124,10 +124,10 @@ export const TeamDetailsView: React.FC<TeamDetailsViewProps> = ({ teamId }) => {
   const leaderPhone = leaderUser?.phoneNumber || "+1 (555) 019-2834";
   const leaderJoined = leaderObj?.joinedAt
     ? new Date(leaderObj.joinedAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "Event Kickoff";
 
   // Task Stats calculations
@@ -476,16 +476,14 @@ export const TeamDetailsView: React.FC<TeamDetailsViewProps> = ({ teamId }) => {
                           {t.taskTitle}
                         </h4>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                            statusColors[t.status] || statusColors.Pending
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${statusColors[t.status] || statusColors.Pending
+                            }`}
                         >
                           {t.status}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                            priorityColors[t.priority] || priorityColors.Medium
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${priorityColors[t.priority] || priorityColors.Medium
+                            }`}
                         >
                           {t.priority}
                         </span>

@@ -18,7 +18,7 @@ import {
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Helper: Verify user has permission to modify tasks for a team.
@@ -117,25 +117,85 @@ export class TaskService {
   async createTask(teamId: string, userId: string, createTaskDto: CreateTaskDto) {
     const { eventMember } = await this.verifyTeamAndPermissions(teamId, userId);
 
-    return this.prisma.task.create({
-      data: {
-        teamId,
-        createdByMemberId: eventMember.eventMemberId,
-        taskTitle: createTaskDto.taskTitle,
-        description: createTaskDto.description || null,
-        priority: createTaskDto.priority || TaskPriority.Medium,
-        status: TaskStatus.Pending,
-        dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
-      },
-      include: {
-        team: {
-          select: {
-            teamId: true,
-            teamName: true,
-            eventId: true,
+    return this.prisma.$transaction(async (tx) => {
+      const task = await tx.task.create({
+        data: {
+          teamId,
+          createdByMemberId: eventMember.eventMemberId,
+          taskTitle: createTaskDto.taskTitle,
+          description: createTaskDto.description || null,
+          priority: createTaskDto.priority || TaskPriority.Medium,
+          status: TaskStatus.Pending,
+          dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
+        },
+        include: {
+          team: {
+            select: {
+              teamId: true,
+              teamName: true,
+              eventId: true,
+            },
           },
         },
-      },
+      });
+
+      if (
+        createTaskDto.assignedMembershipIds &&
+        Array.isArray(createTaskDto.assignedMembershipIds) &&
+        createTaskDto.assignedMembershipIds.length > 0
+      ) {
+        // Max 3 assignees
+        const targetIds = Array.from(new Set(createTaskDto.assignedMembershipIds)).slice(0, 3);
+        for (const membershipId of targetIds) {
+          const membership = await tx.teamMembership.findUnique({
+            where: { teamMembershipId: membershipId },
+          });
+          if (membership && membership.teamId === teamId) {
+            await tx.taskAssignment.create({
+              data: {
+                taskId: task.taskId,
+                teamMembershipId: membershipId,
+                assignedByMemberId: eventMember.eventMemberId,
+                assignmentStatus: 'Assigned',
+              },
+            });
+          }
+        }
+      }
+
+      return tx.task.findUnique({
+        where: { taskId: task.taskId },
+        include: {
+          team: {
+            select: {
+              teamId: true,
+              teamName: true,
+              eventId: true,
+            },
+          },
+          assignments: {
+            include: {
+              teamMembership: {
+                include: {
+                  eventMember: {
+                    include: {
+                      user: {
+                        select: {
+                          userId: true,
+                          firstName: true,
+                          lastName: true,
+                          email: true,
+                          profilePhotoUrl: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
     });
   }
 
@@ -191,6 +251,27 @@ export class TaskService {
             },
           },
         },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         _count: {
           select: {
             assignments: true,
@@ -223,6 +304,27 @@ export class TaskService {
             teamName: true,
           },
         },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         createdBy: {
           include: {
             user: {
@@ -247,6 +349,7 @@ export class TaskService {
       priority: task.priority,
       dueDate: task.dueDate,
       creatorName: `${task.createdBy.user.firstName} ${task.createdBy.user.lastName}`,
+      assignments: task.assignments,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
     }));
@@ -281,6 +384,27 @@ export class TaskService {
                 lastName: true,
                 email: true,
                 profilePhotoUrl: true,
+              },
+            },
+          },
+        },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -339,6 +463,7 @@ export class TaskService {
       },
       assignmentCount: task._count.assignments,
       completedAssignmentCount,
+      assignments: task.assignments as any,
     };
   }
 
@@ -366,6 +491,29 @@ export class TaskService {
         ...(updateTaskDto.dueDate !== undefined && {
           dueDate: updateTaskDto.dueDate ? new Date(updateTaskDto.dueDate) : null,
         }),
+      },
+      include: {
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -470,6 +618,27 @@ export class TaskService {
             eventId: true,
           },
         },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         createdBy: {
           include: {
             user: {
@@ -520,6 +689,27 @@ export class TaskService {
             teamId: true,
             teamName: true,
             eventId: true,
+          },
+        },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         createdBy: {

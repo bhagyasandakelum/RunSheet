@@ -39,6 +39,7 @@ export interface TaskDetailsResponse {
   createdBy: TaskCreatorInfo;
   assignmentCount: number;
   completedAssignmentCount: number;
+  assignments?: any[];
 }
 
 export interface EventTaskListItem {
@@ -51,6 +52,7 @@ export interface EventTaskListItem {
   priority: TaskPriority;
   dueDate: Date | null;
   creatorName: string;
+  assignments?: any[];
   createdAt: Date;
   updatedAt: Date;
 }
