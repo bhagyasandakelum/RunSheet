@@ -8,13 +8,26 @@ export interface SendAnnouncementDto {
 }
 
 export interface NotificationStatistics {
-  unreadCount: number;
-  totalCount: number;
+  totalNotifications: number;
+  read: number;
+  unread: number;
+  expired: number;
+  byType: Record<string, number>;
+}
+
+export interface NotificationFilterParams extends QueryParams {
+  unreadOnly?: boolean;
+  notificationType?: string;
+  page?: number;
+  limit?: number;
 }
 
 export const notificationService = {
-  async getMyNotifications(params?: QueryParams): Promise<Notification[]> {
-    return apiClient.get<Notification[]>("/notifications", { params });
+  async getMyNotifications(params?: NotificationFilterParams): Promise<Notification[]> {
+    const res = await apiClient.get<any>("/notifications", { params });
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.data)) return res.data;
+    return [];
   },
 
   async getNotificationStatistics(): Promise<NotificationStatistics> {
