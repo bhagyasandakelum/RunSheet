@@ -33,7 +33,7 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       toast.success("Welcome back!", "Successfully signed in to RunSheet.");
-      window.location.href = "/dashboard";
+      router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setErrorMessage(err.message);

@@ -28,8 +28,6 @@ export const TeamDistributionDonut: React.FC<TeamDistributionDonutProps> = ({
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
 
-  let cumulativePercent = 0;
-
   return (
     <div className="p-5 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
       <div className="flex items-center justify-between">
@@ -43,27 +41,36 @@ export const TeamDistributionDonut: React.FC<TeamDistributionDonutProps> = ({
       <div className="flex items-center justify-center py-2">
         <div className="relative w-32 h-32 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-            {distribution.map((item, idx) => {
-              const percent = item.memberCount / sumCount;
-              const strokeDasharray = `${circumference * percent} ${circumference * (1 - percent)}`;
-              const strokeDashoffset = `-${circumference * cumulativePercent}`;
-              cumulativePercent += percent;
+            {distribution
+              .reduce<{ item: TeamDistributionItem; offset: number; percent: number }[]>(
+                (acc, item) => {
+                  const percent = item.memberCount / sumCount;
+                  const last = acc[acc.length - 1];
+                  const offset = last ? last.offset + last.percent : 0;
+                  acc.push({ item, offset, percent });
+                  return acc;
+                },
+                []
+              )
+              .map(({ item, offset, percent }, idx) => {
+                const strokeDasharray = `${circumference * percent} ${circumference * (1 - percent)}`;
+                const strokeDashoffset = `-${circumference * offset}`;
 
-              return (
-                <circle
-                  key={idx}
-                  cx="50"
-                  cy="50"
-                  r={radius}
-                  fill="transparent"
-                  stroke={item.color}
-                  strokeWidth="12"
-                  strokeDasharray={strokeDasharray}
-                  strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-700"
-                />
-              );
-            })}
+                return (
+                  <circle
+                    key={idx}
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="transparent"
+                    stroke={item.color}
+                    strokeWidth="12"
+                    strokeDasharray={strokeDasharray}
+                    strokeDashoffset={strokeDashoffset}
+                    className="transition-all duration-700"
+                  />
+                );
+              })}
           </svg>
 
           <div className="absolute flex flex-col items-center justify-center text-center">
