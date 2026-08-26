@@ -8,34 +8,7 @@ export interface RecentlyJoinedPanelProps {
 }
 
 export const RecentlyJoinedPanel: React.FC<RecentlyJoinedPanelProps> = ({ members = [] }) => {
-  const displayList = members.length > 0
-    ? members.slice(0, 4)
-    : [
-        {
-          eventMemberId: "sample-1",
-          firstName: "Sarah",
-          lastName: "Jenkins",
-          email: "sarah.j@ops.io",
-          joinedAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-          teamName: "Tech Ops",
-        },
-        {
-          eventMemberId: "sample-2",
-          firstName: "David",
-          lastName: "Lee",
-          email: "david.lee@stagemedia.com",
-          joinedAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
-          teamName: "Logistics",
-        },
-        {
-          eventMemberId: "sample-3",
-          firstName: "Elena",
-          lastName: "Rostova",
-          email: "elena@runsheet.io",
-          joinedAt: new Date(Date.now() - 28 * 3600 * 1000).toISOString(),
-          teamName: "Marketing",
-        },
-      ];
+  const displayList = members.slice(0, 4);
 
   const formatTimeAgo = (isoDate: string) => {
     const diffMs = Date.now() - new Date(isoDate).getTime();
@@ -57,37 +30,43 @@ export const RecentlyJoinedPanel: React.FC<RecentlyJoinedPanelProps> = ({ member
       </div>
 
       <div className="space-y-3">
-        {displayList.map((m) => {
-          const name = m.user ? `${m.user.firstName} ${m.user.lastName}` : `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Event Volunteer";
-          const email = m.user?.email || m.email || "volunteer@runsheet.io";
-          const initials = name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "EV";
-          const team = m.teamName || m.teamMembership?.team?.teamName || "Unassigned";
+        {displayList.length === 0 ? (
+          <p className="text-xs text-slate-400 font-medium py-3 text-center">
+            No recent member activity.
+          </p>
+        ) : (
+          displayList.map((m) => {
+            const name = m.user ? `${m.user.firstName} ${m.user.lastName}` : `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Event Volunteer";
+            const email = m.user?.email || m.email || "volunteer@runsheet.io";
+            const initials = name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "EV";
+            const team = m.teamName || m.teamMembership?.team?.teamName || "Unassigned";
 
-          return (
-            <div
-              key={m.eventMemberId}
-              className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-800 dark:text-emerald-300 shrink-0">
-                  {initials}
+            return (
+              <div
+                key={m.eventMemberId}
+                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-800 dark:text-emerald-300 shrink-0">
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {name}
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                      {team}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {name}
-                  </p>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                    {team}
-                  </p>
-                </div>
+
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0">
+                  {formatTimeAgo(m.joinedAt)}
+                </span>
               </div>
-
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 shrink-0">
-                {formatTimeAgo(m.joinedAt)}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

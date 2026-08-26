@@ -283,10 +283,13 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
                   e.stopPropagation();
                   onMarkAsRead(notificationId);
                 }}
-                className="p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-[11px]"
+                className="inline-flex items-center gap-1 p-1 px-1.5 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-[11px] font-semibold"
                 title="Mark as read"
               >
-                ✓ Read
+                <svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Read</span>
               </button>
             )}
 

@@ -67,24 +67,41 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
     }
   };
 
-  const statusOptions: { value: AssignmentStatus; label: string; desc: string; icon: string }[] = [
+  const statusOptions: {
+    value: AssignmentStatus;
+    label: string;
+    desc: string;
+    icon: React.ReactNode;
+  }[] = [
     {
       value: AssignmentStatus.Assigned,
       label: "Assigned",
       desc: "Task is queued and ready to be started.",
-      icon: "📋",
+      icon: (
+        <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      ),
     },
     {
       value: AssignmentStatus.InProgress,
       label: "In Progress",
       desc: "Actively working on this operational task.",
-      icon: "⚡",
+      icon: (
+        <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      ),
     },
     {
       value: AssignmentStatus.Completed,
       label: "Completed",
       desc: "Work finished and milestone requirements met.",
-      icon: "✅",
+      icon: (
+        <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
     },
   ];
 
@@ -112,8 +129,11 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
+            aria-label="Close"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -141,15 +161,18 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
                         : "border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-[#1A2234] hover:border-slate-300 dark:hover:border-slate-700"
                     }`}
                   >
-                    <span className="text-lg">{opt.icon}</span>
+                    <div className="mt-0.5 shrink-0">{opt.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-bold text-slate-900 dark:text-white">
                           {opt.label}
                         </p>
                         {isSelected && (
-                          <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">
-                            ✓ Selected
+                          <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Selected
                           </span>
                         )}
                       </div>

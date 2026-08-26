@@ -222,10 +222,19 @@ export const InvitationsTable: React.FC<InvitationsTableProps> = ({
                         <button
                           type="button"
                           onClick={() => handleCopyLink(inv.invitationId)}
-                          className="px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                           title="Copy Invitation Link"
                         >
-                          {copiedId === inv.invitationId ? "Copied!" : "🔗 Copy Link"}
+                          {copiedId === inv.invitationId ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
+                          ) : (
+                            <>
+                              <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                              </svg>
+                              <span>Copy Link</span>
+                            </>
+                          )}
                         </button>
 
                         {(inv.status === "Pending" || inv.status === "Expired") && user?.email && (

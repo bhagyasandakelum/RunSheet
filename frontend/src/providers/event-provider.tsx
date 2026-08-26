@@ -39,14 +39,41 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       setIsLoading(true);
       const data = await eventService.getMyEvents();
-      setEvents(data || []);
+      const eventList = data || [];
+      setEvents(eventList);
 
-      if (data && data.length > 0) {
+      if (eventList.length > 0) {
         setSelectedEventIdState((prev) => {
-          if (prev && data.some((e) => e.eventId === prev)) {
+          // 1. Check if user already had a valid selection in current session
+          if (prev && eventList.some((e) => e.eventId === prev)) {
             return prev;
           }
-          return data[0].eventId;
+
+          // 2. Check localStorage for previously saved active selection
+          if (typeof window !== "undefined") {
+            const savedId = localStorage.getItem("runsheet_selected_event_id");
+            if (savedId && eventList.some((e) => e.eventId === savedId)) {
+              return savedId;
+            }
+          }
+
+          // 3. Select the event with status Active if one exists
+          const activeEvt = eventList.find(
+            (e) => (e.status as string) === "Active"
+          );
+          if (activeEvt) {
+            if (typeof window !== "undefined") {
+              localStorage.setItem("runsheet_selected_event_id", activeEvt.eventId);
+            }
+            return activeEvt.eventId;
+          }
+
+          // 4. Default to first event
+          const firstId = eventList[0].eventId;
+          if (typeof window !== "undefined") {
+            localStorage.setItem("runsheet_selected_event_id", firstId);
+          }
+          return firstId;
         });
       } else {
         setSelectedEventIdState(null);
@@ -109,6 +136,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setSelectedEventId = (eventId: string) => {
     setSelectedEventIdState(eventId);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("runsheet_selected_event_id", eventId);
+    }
   };
 
   const selectedEvent = events.find((e) => e.eventId === selectedEventId) || null;

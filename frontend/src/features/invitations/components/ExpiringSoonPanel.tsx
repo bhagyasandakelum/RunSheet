@@ -22,40 +22,7 @@ export const ExpiringSoonPanel: React.FC<ExpiringSoonPanelProps> = ({
     return diffHours > 0 && diffHours <= 72; // expiring in next 72 hours
   });
 
-  const displayList = pendingSoon.length > 0
-    ? pendingSoon
-    : [
-        {
-          invitationId: "sample-1",
-          userId: "u-1",
-          eventId: "e-1",
-          status: "Pending",
-          expiresAt: new Date(Date.now() + 18 * 3600 * 1000).toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          user: {
-            userId: "u-1",
-            firstName: "Franklin",
-            lastName: "Vance",
-            email: "franklin.vance@techops.io",
-          },
-        },
-        {
-          invitationId: "sample-2",
-          userId: "u-2",
-          eventId: "e-1",
-          status: "Pending",
-          expiresAt: new Date(Date.now() + 36 * 3600 * 1000).toISOString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          user: {
-            userId: "u-2",
-            firstName: "Sasha",
-            lastName: "Riley",
-            email: "sasha.riley@stagemedia.com",
-          },
-        },
-      ];
+  const displayList = pendingSoon;
 
   const getRemainingTimeText = (expiresAt: string) => {
     const diffMs = new Date(expiresAt).getTime() - Date.now();
@@ -82,43 +49,49 @@ export const ExpiringSoonPanel: React.FC<ExpiringSoonPanelProps> = ({
       </div>
 
       <div className="space-y-3">
-        {displayList.slice(0, 3).map((item) => {
-          const name = item.user ? `${item.user.firstName} ${item.user.lastName}` : item.userId;
-          const email = item.user?.email || "user@example.com";
-          const initials = item.user
-            ? `${item.user.firstName[0]}${item.user.lastName[0]}`.toUpperCase()
-            : "IN";
+        {displayList.length === 0 ? (
+          <p className="text-xs text-slate-400 font-medium py-3 text-center">
+            No invitations expiring in the next 72 hours.
+          </p>
+        ) : (
+          displayList.slice(0, 3).map((item) => {
+            const name = item.user ? `${item.user.firstName} ${item.user.lastName}` : item.userId;
+            const email = item.user?.email || "user@example.com";
+            const initials = item.user
+              ? `${item.user.firstName[0]}${item.user.lastName[0]}`.toUpperCase()
+              : "IN";
 
-          return (
-            <div
-              key={item.invitationId}
-              className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-3"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-500/30 flex items-center justify-center text-[10px] font-bold text-amber-800 dark:text-amber-300 shrink-0">
-                  {initials}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                    {name}
-                  </p>
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold truncate">
-                    {getRemainingTimeText(item.expiresAt)}
-                  </p>
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-[11px] h-7 px-2.5 shrink-0 border-amber-300 dark:border-amber-700/60 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-300"
-                onClick={() => onResend?.(email)}
+            return (
+              <div
+                key={item.invitationId}
+                className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-3"
               >
-                Resend
-              </Button>
-            </div>
-          );
-        })}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/70 border border-amber-500/30 flex items-center justify-center text-[10px] font-bold text-amber-800 dark:text-amber-300 shrink-0">
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                      {name}
+                    </p>
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold truncate">
+                      {getRemainingTimeText(item.expiresAt)}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-[11px] h-7 px-2.5 shrink-0 border-amber-300 dark:border-amber-700/60 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-amber-700 dark:text-amber-300"
+                  onClick={() => onResend?.(email)}
+                >
+                  Resend
+                </Button>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );

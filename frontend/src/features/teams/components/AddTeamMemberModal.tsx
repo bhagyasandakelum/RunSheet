@@ -107,8 +107,11 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center"
+            aria-label="Close"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -187,8 +190,11 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
                       </div>
                     </div>
                     {isSelected && (
-                      <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
-                        ✓ Selected
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Selected
                       </span>
                     )}
                   </div>

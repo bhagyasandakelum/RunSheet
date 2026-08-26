@@ -284,7 +284,7 @@ export const TasksListView: React.FC = () => {
             onChange={(e) => setSelectedTeamFilter(e.target.value)}
             className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-[#1A2234] text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
           >
-            <option value="all">👥 All Teams ({teams.length})</option>
+            <option value="all">All Teams ({teams.length})</option>
             {teams.map((t) => (
               <option key={t.teamId} value={t.teamId}>
                 {t.teamName}

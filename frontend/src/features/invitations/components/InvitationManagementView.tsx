@@ -116,7 +116,7 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
             >
               {events.map((evt) => (
                 <option key={evt.eventId} value={evt.eventId}>
-                  📅 {evt.eventName}
+                  {evt.eventName}
                 </option>
               ))}
             </select>
@@ -155,7 +155,9 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
 
       {error && (
         <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-          <span>⚠️</span>
+          <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
           <span>{error}</span>
         </div>
       )}

@@ -194,7 +194,9 @@ export const CreateTaskForm: React.FC = () => {
 
       {error && (
         <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
-          <span>⚠️</span>
+          <svg className="w-4 h-4 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
           <span>{error}</span>
         </div>
       )}
@@ -218,7 +220,7 @@ export const CreateTaskForm: React.FC = () => {
                 >
                   {events.map((evt) => (
                     <option key={evt.eventId} value={evt.eventId}>
-                      📅 {evt.eventName}
+                      {evt.eventName}
                     </option>
                   ))}
                 </select>
@@ -241,7 +243,7 @@ export const CreateTaskForm: React.FC = () => {
                   >
                     {teams.map((t) => (
                       <option key={t.teamId} value={t.teamId}>
-                        👥 {t.teamName}
+                        {t.teamName}
                       </option>
                     ))}
                   </select>
@@ -386,9 +388,11 @@ export const CreateTaskForm: React.FC = () => {
 
                         <div className="w-5 h-5 rounded-md border flex items-center justify-center text-xs transition-colors shrink-0">
                           {isChecked ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                            <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
                           ) : (
-                            <span className="text-slate-300 dark:text-slate-600">+</span>
+                            <span className="text-slate-300 dark:text-slate-600 font-bold">+</span>
                           )}
                         </div>
                       </div>
@@ -452,8 +456,11 @@ export const CreateTaskForm: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-              <span>
-                📅 {dueDate ? new Date(dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No Due Date"}
+              <span className="inline-flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                {dueDate ? new Date(dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No Due Date"}
                 {dueTime && ` at ${dueTime}`}
               </span>
               <span className="text-emerald-400 font-bold">

@@ -68,8 +68,10 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
   if (error || !eventData) {
     return (
       <div className="p-8 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 max-w-xl mx-auto text-center space-y-4 my-12">
-        <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/60 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto text-xl font-bold">
-          ⚠️
+        <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/60 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
         </div>
         <div>
           <h3 className="text-base font-bold text-red-950 dark:text-red-200">Unable to load event</h3>
@@ -418,7 +420,9 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800/60 text-red-600 dark:text-red-400 flex items-center justify-center text-xs font-black">
-                ⚠️
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
               </span>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                 Critical Action Required
@@ -455,40 +459,8 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                 </div>
               ))
             ) : (
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-4">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                        Finalize Keynote Audio Setup
-                      </p>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-4">
-                      Overdue by 3 hours • <span className="font-semibold text-slate-700 dark:text-slate-300">Tech Ops</span>
-                    </p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/80 border border-red-300 dark:border-red-800 text-[10px] font-bold text-red-700 dark:text-red-300 uppercase tracking-wider shrink-0">
-                    Critical
-                  </span>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between gap-4">
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                        Approve Catering Menu & Vendor Badges
-                      </p>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-4">
-                      Due Today • <span className="font-semibold text-slate-700 dark:text-slate-300">Operations & Hospitality</span>
-                    </p>
-                  </div>
-                  <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-800 text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider shrink-0">
-                    High
-                  </span>
-                </div>
+              <div className="py-8 text-center text-xs text-slate-400 font-medium">
+                No critical actions required at this time.
               </div>
             )}
           </div>
@@ -559,46 +531,9 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
               );
             })
           ) : (
-            // Default sample team cards if empty
-            [
-              { letter: "A", name: "Tech Ops", members: 12, tasks: 48, progress: 82, idx: 0 },
-              { letter: "B", name: "Stage Logistics", members: 24, tasks: 92, progress: 65, idx: 1 },
-              { letter: "C", name: "Marketing & Media", members: 18, tasks: 34, progress: 90, idx: 2 },
-            ].map((sample) => {
-              const color = getTeamColor(sample.idx);
-              return (
-                <div
-                  key={sample.name}
-                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 space-y-3 transition-all hover:border-slate-300 dark:hover:border-slate-700"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl ${color.bg} text-white font-black text-sm flex items-center justify-center shadow-xs`}>
-                        {sample.letter}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {sample.name}
-                        </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                          {sample.members} members • {sample.tasks} tasks
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs font-extrabold text-slate-900 dark:text-white">
-                      {sample.progress}%
-                    </span>
-                  </div>
-
-                  <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className={`h-full bg-gradient-to-r ${color.bar} rounded-full transition-all duration-500`}
-                      style={{ width: `${sample.progress}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })
+            <div className="col-span-full py-8 text-center text-xs text-slate-400 font-medium">
+              No teams created for this event yet.
+            </div>
           )}
         </div>
       </div>

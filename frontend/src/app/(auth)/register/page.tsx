@@ -101,9 +101,12 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setErrorMessage(null)}
-                className="opacity-70 hover:opacity-100"
+                className="opacity-70 hover:opacity-100 p-0.5"
+                aria-label="Dismiss error"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           )}

@@ -159,9 +159,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
 
           <button
             onClick={onClose}
-            className="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+            className="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+            aria-label="Close sidebar"
           >
-            ✕
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
