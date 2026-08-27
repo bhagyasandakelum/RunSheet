@@ -529,13 +529,52 @@ export class TaskService {
   ) {
     const task = await this.prisma.task.findUnique({
       where: { taskId },
+      include: {
+        team: {
+          include: {
+            event: true,
+            leader: {
+              include: {
+                eventMember: true,
+              },
+            },
+          },
+        },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    await this.verifyTeamAndPermissions(task.teamId, userId);
+    if (
+      task.team.event.status === EventStatus.Completed ||
+      task.team.event.status === EventStatus.Archived ||
+      task.team.event.status === EventStatus.Cancelled
+    ) {
+      throw new BadRequestException(
+        'Cannot modify tasks in a completed, archived, or cancelled event',
+      );
+    }
+
+    // Verify user is organizer or team leader of this team
+    const isOrganizer = task.team.event.organizerId === userId;
+    const isLeader = task.team.leader?.eventMember?.userId === userId;
+
+    if (!isOrganizer && !isLeader) {
+      throw new ForbiddenException(
+        'Only the event organizer or team leader of this team can change the overall task status',
+      );
+    }
 
     return this.prisma.task.update({
       where: { taskId },

@@ -40,8 +40,11 @@ export class EventController {
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getEventDetails(@Param('id', ParseUUIDPipe) id: string) {
-    return this.eventService.getEventDetails(id);
+  async getEventDetails(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.eventService.getEventDetails(id, user.userId);
   }
 
   @Patch(':id')

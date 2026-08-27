@@ -9,3 +9,4 @@ export * from "./components/InvitationsTable";
 export * from "./components/InviteMemberLivePreview";
 export * from "./components/InviteMemberForm";
 export * from "./components/InvitationManagementView";
+export * from "./components/ReceivedInvitationsView";

@@ -250,6 +250,10 @@ export class EventMemberService {
       }
 
       if (member.teamMembership) {
+        await tx.taskAssignment.deleteMany({
+          where: { teamMembershipId: member.teamMembership.teamMembershipId },
+        });
+
         await tx.teamMembership.delete({
           where: { teamMembershipId: member.teamMembership.teamMembershipId },
         });
@@ -259,7 +263,14 @@ export class EventMemberService {
         where: { eventMemberId: memberId },
       });
 
-      return { message: 'Member removed successfully' };
+      await tx.invitation.deleteMany({
+        where: {
+          eventId,
+          userId: member.userId,
+        },
+      });
+
+      return { message: 'Member removed successfully and event access revoked' };
     });
   }
 

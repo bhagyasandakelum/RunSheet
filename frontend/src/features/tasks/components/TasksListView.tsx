@@ -14,7 +14,10 @@ import { DeleteTaskModal } from "./DeleteTaskModal";
 
 export const TasksListView: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { events, selectedEventId } = useEvent();
+  const { events, selectedEventId, isOrganizer, userTeamName } = useEvent();
+
+  const isLeader = Boolean(userTeamName?.includes("(Lead)") || userTeamName?.includes("Leader"));
+  const canManageTasks = isOrganizer || isLeader;
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -186,28 +189,30 @@ export const TasksListView: React.FC = () => {
           </p>
         </div>
 
-        <div>
-          <Link
-            href={
-              selectedTeamFilter !== "all"
-                ? `/tasks/create?teamId=${selectedTeamFilter}`
-                : `/tasks/create`
-            }
-          >
-            <Button
-              variant="primary"
-              size="md"
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm"
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+        {canManageTasks && (
+          <div>
+            <Link
+              href={
+                selectedTeamFilter !== "all"
+                  ? `/tasks/create?teamId=${selectedTeamFilter}`
+                  : `/tasks/create`
               }
             >
-              Create Task
-            </Button>
-          </Link>
-        </div>
+              <Button
+                variant="primary"
+                size="md"
+                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm"
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                }
+              >
+                Create Task
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -330,17 +335,19 @@ export const TasksListView: React.FC = () => {
         ) : filteredTasks.length === 0 ? (
           <div className="py-20 text-center text-xs text-slate-400 space-y-3">
             <p>No tasks match the selected criteria.</p>
-            <Link
-              href={
-                selectedTeamFilter !== "all"
-                  ? `/tasks/create?teamId=${selectedTeamFilter}`
-                  : `/tasks/create`
-              }
-            >
-              <Button variant="outline" size="sm" className="text-xs font-semibold">
-                + Create Task
-              </Button>
-            </Link>
+            {canManageTasks && (
+              <Link
+                href={
+                  selectedTeamFilter !== "all"
+                    ? `/tasks/create?teamId=${selectedTeamFilter}`
+                    : `/tasks/create`
+                }
+              >
+                <Button variant="outline" size="sm" className="text-xs font-semibold">
+                  + Create Task
+                </Button>
+              </Link>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -390,13 +397,38 @@ export const TasksListView: React.FC = () => {
 
                       {/* Status */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                            statusColors[t.status]?.bg || ""
-                          } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
-                        >
-                          {t.status}
-                        </span>
+                        {canManageTasks ? (
+                          <select
+                            value={t.status}
+                            onChange={async (e) => {
+                              const newStatus = e.target.value as TaskStatus;
+                              try {
+                                await taskService.updateTaskStatus(t.taskId, { status: newStatus });
+                                loadTasks();
+                              } catch (err: any) {
+                                setError(err?.response?.data?.message || err?.message || "Failed to update status.");
+                              }
+                            }}
+                            className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border cursor-pointer focus:outline-none transition-colors ${
+                              statusColors[t.status]?.bg || ""
+                            } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
+                            title="Click to update task status (Organizer / Team Leader)"
+                          >
+                            <option value={TaskStatus.Pending}>Pending</option>
+                            <option value={TaskStatus.InProgress}>In Progress</option>
+                            <option value={TaskStatus.Completed}>Completed</option>
+                            <option value={TaskStatus.OnHold}>On Hold</option>
+                            <option value={TaskStatus.Overdue}>Overdue</option>
+                          </select>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+                              statusColors[t.status]?.bg || ""
+                            } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
+                          >
+                            {t.status}
+                          </span>
+                        )}
                       </td>
 
                       {/* Priority */}
@@ -413,17 +445,21 @@ export const TasksListView: React.FC = () => {
                       {/* Stacked Assignees */}
                       <td className="py-4 px-4 whitespace-nowrap">
                         {assignees.length === 0 ? (
-                          <button
-                            onClick={() => setAssignModalTask(t)}
-                            className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold"
-                          >
-                            + Assign
-                          </button>
+                          canManageTasks ? (
+                            <button
+                              onClick={() => setAssignModalTask(t)}
+                              className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold"
+                            >
+                              + Assign
+                            </button>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">Unassigned</span>
+                          )
                         ) : (
                           <div
-                            onClick={() => setAssignModalTask(t)}
-                            className="flex -space-x-2 overflow-hidden cursor-pointer"
-                            title="Click to manage assignees"
+                            onClick={() => canManageTasks && setAssignModalTask(t)}
+                            className={`flex -space-x-2 overflow-hidden ${canManageTasks ? "cursor-pointer" : ""}`}
+                            title={canManageTasks ? "Click to manage assignees" : "Assigned members"}
                           >
                             {assignees.map((a: any) => {
                               const u =
@@ -485,26 +521,30 @@ export const TasksListView: React.FC = () => {
                             </button>
                           </Link>
 
-                          <Link href={`/tasks/${t.taskId}/edit`}>
+                          {canManageTasks && (
+                            <Link href={`/tasks/${t.taskId}/edit`}>
+                              <button
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                title="Edit Task"
+                              >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                            </Link>
+                          )}
+
+                          {canManageTasks && (
                             <button
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                              title="Edit Task"
+                              onClick={() => setDeleteModalTask(t)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                              title="Delete Task"
                             >
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
-                          </Link>
-
-                          <button
-                            onClick={() => setDeleteModalTask(t)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                            title="Delete Task"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          )}
                         </div>
                       </td>
                     </tr>

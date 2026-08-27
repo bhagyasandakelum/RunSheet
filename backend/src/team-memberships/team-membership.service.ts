@@ -111,25 +111,84 @@ export class TeamMembershipService {
         throw new BadRequestException('Must provide eventMemberId, userId, or email');
       }
 
-      let eventMember = await this.prisma.eventMember.findUnique({
-        where: {
-          eventId_userId: {
-            eventId: team.eventId,
-            userId: targetUserId,
-          },
-        },
-      });
-
-      if (!eventMember) {
-        eventMember = await this.prisma.eventMember.create({
-          data: {
-            eventId: team.eventId,
-            userId: targetUserId,
+      if (targetUserId === team.event.organizerId) {
+        // Organizer adding themselves
+        let eventMember = await this.prisma.eventMember.findUnique({
+          where: {
+            eventId_userId: {
+              eventId: team.eventId,
+              userId: targetUserId,
+            },
           },
         });
-      }
 
-      targetEventMemberId = eventMember.eventMemberId;
+        if (!eventMember) {
+          eventMember = await this.prisma.eventMember.create({
+            data: {
+              eventId: team.eventId,
+              userId: targetUserId,
+            },
+          });
+        }
+        targetEventMemberId = eventMember.eventMemberId;
+      } else {
+        // Check if user is already an accepted EventMember
+        const existingEventMember = await this.prisma.eventMember.findUnique({
+          where: {
+            eventId_userId: {
+              eventId: team.eventId,
+              userId: targetUserId,
+            },
+          },
+        });
+
+        if (existingEventMember) {
+          targetEventMemberId = existingEventMember.eventMemberId;
+        } else {
+          // Send an invitation to the user so they must accept before gaining access
+          const existingInvitation = await this.prisma.invitation.findFirst({
+            where: {
+              eventId: team.eventId,
+              userId: targetUserId,
+            },
+          });
+
+          if (existingInvitation && existingInvitation.status === 'Pending' && existingInvitation.expiresAt > new Date()) {
+            return {
+              status: 'InvitationPending',
+              message: 'An invitation is already pending for this user. They will join the team once they accept it.',
+              invitationId: existingInvitation.invitationId,
+            };
+          }
+
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 3);
+
+          if (existingInvitation) {
+            await this.prisma.invitation.update({
+              where: { invitationId: existingInvitation.invitationId },
+              data: {
+                status: 'Pending',
+                expiresAt,
+              },
+            });
+          } else {
+            await this.prisma.invitation.create({
+              data: {
+                eventId: team.eventId,
+                userId: targetUserId,
+                status: 'Pending',
+                expiresAt,
+              },
+            });
+          }
+
+          return {
+            status: 'InvitationSent',
+            message: 'Invitation sent to user. They will join the team once they accept the invitation in their dashboard.',
+          };
+        }
+      }
     } else {
       const eventMember = await this.prisma.eventMember.findUnique({
         where: { eventMemberId: targetEventMemberId },
@@ -472,9 +531,28 @@ export class TeamMembershipService {
         });
       }
 
+      // Delete task assignments for this membership
+      await tx.taskAssignment.deleteMany({
+        where: { teamMembershipId: membershipId },
+      });
+
       await tx.teamMembership.delete({
         where: { teamMembershipId: membershipId },
       });
+
+      // If user is not the organizer, remove their EventMember record to fully revoke event access
+      if (membership.eventMember.userId !== membership.team.event.organizerId) {
+        await tx.eventMember.delete({
+          where: { eventMemberId: membership.eventMemberId },
+        });
+
+        await tx.invitation.deleteMany({
+          where: {
+            eventId: membership.team.eventId,
+            userId: membership.eventMember.userId,
+          },
+        });
+      }
     });
   }
 

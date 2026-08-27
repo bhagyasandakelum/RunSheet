@@ -210,13 +210,30 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               {task.taskTitle}
             </h1>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                statusColors[task.status]?.bg || ""
-              } ${statusColors[task.status]?.text || ""} ${statusColors[task.status]?.border || ""}`}
-            >
-              {task.status}
-            </span>
+            {canManage ? (
+              <select
+                value={task.status}
+                onChange={(e) => handleQuickStatusChange(e.target.value as TaskStatus)}
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border cursor-pointer focus:outline-none transition-colors ${
+                  statusColors[task.status]?.bg || ""
+                } ${statusColors[task.status]?.text || ""} ${statusColors[task.status]?.border || ""}`}
+                title="Click to update task status (Organizer / Team Leader)"
+              >
+                <option value={TaskStatus.Pending}>Pending</option>
+                <option value={TaskStatus.InProgress}>In Progress</option>
+                <option value={TaskStatus.Completed}>Completed</option>
+                <option value={TaskStatus.OnHold}>On Hold</option>
+                <option value={TaskStatus.Overdue}>Overdue</option>
+              </select>
+            ) : (
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+                  statusColors[task.status]?.bg || ""
+                } ${statusColors[task.status]?.text || ""} ${statusColors[task.status]?.border || ""}`}
+              >
+                {task.status}
+              </span>
+            )}
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                 priorityColors[task.priority]?.bg || ""

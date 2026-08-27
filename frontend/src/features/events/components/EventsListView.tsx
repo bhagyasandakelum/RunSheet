@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { eventService } from "@/services/event-service";
+import { useAuth } from "@/hooks/use-auth";
 import { Event } from "@/types/common/entities";
 import { EventStatus } from "@/types/common/enums";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +13,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { DeleteEventModal } from "./DeleteEventModal";
 
 export const EventsListView: React.FC = () => {
+  const { user } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "ORGANIZER" | "MEMBER">("ALL");
 
   // Deletion state
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
@@ -27,7 +30,7 @@ export const EventsListView: React.FC = () => {
       setIsLoading(true);
       setError(null);
       const data = await eventService.getMyEvents();
-      setEvents(data);
+      setEvents(data || []);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to load events");
     } finally {
@@ -66,18 +69,23 @@ export const EventsListView: React.FC = () => {
   };
 
   const filteredEvents = events.filter((evt) => {
+    const isOrganizer = evt.organizerId === user?.userId;
     const matchesSearch =
       evt.eventName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       evt.venue.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (evt.description && evt.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesStatus = statusFilter === "ALL" || evt.status === statusFilter;
+    const matchesRole =
+      roleFilter === "ALL" ||
+      (roleFilter === "ORGANIZER" && isOrganizer) ||
+      (roleFilter === "MEMBER" && !isOrganizer);
 
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesRole;
   });
 
   const STATUS_TABS = [
-    { label: "All Events", value: "ALL" },
+    { label: "All Statuses", value: "ALL" },
     { label: "Active", value: EventStatus.Active },
     { label: "Planning", value: EventStatus.Planning },
     { label: "Draft", value: EventStatus.Draft },
@@ -93,47 +101,74 @@ export const EventsListView: React.FC = () => {
             My Events
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
-            Manage, configure, and monitor all your organized runsheets and summits.
+            Manage your organized events and collaborate on team runsheets you belong to.
           </p>
         </div>
 
-        <Link href="/events/create">
-          <Button
-            variant="primary"
-            size="md"
-            className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
-            leftIcon={
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            }
-          >
-            Create New Event
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/invitations">
+            <Button variant="outline" size="md" className="text-xs font-semibold">
+              Received Invitations
+            </Button>
+          </Link>
+          <Link href="/events/create">
+            <Button
+              variant="primary"
+              size="md"
+              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+              leftIcon={
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              }
+            >
+              Create New Event
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters & Search Row */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
-        {/* Status Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setStatusFilter(tab.value)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                statusFilter === tab.value
-                  ? "bg-emerald-500 text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
+        {/* Role & Status Pills */}
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          {/* Role filter */}
+          <div className="flex items-center gap-1 p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800">
+            {(["ALL", "ORGANIZER", "MEMBER"] as const).map((r) => (
+              <button
+                key={r}
+                onClick={() => setRoleFilter(r)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  roleFilter === r
+                    ? "bg-[#28c740] text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                {r === "ALL" ? "All Roles" : r === "ORGANIZER" ? "Organized by Me" : "Team Member"}
+              </button>
+            ))}
+          </div>
+
+          {/* Status Pills */}
+          <div className="flex flex-wrap items-center gap-1">
+            {STATUS_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
+                  statusFilter === tab.value
+                    ? "bg-slate-900 text-white dark:bg-slate-700 shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Search Bar */}
-        <div className="w-full md:w-72">
+        <div className="w-full lg:w-72">
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -170,16 +205,23 @@ export const EventsListView: React.FC = () => {
               No events found
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {searchQuery || statusFilter !== "ALL"
+              {searchQuery || statusFilter !== "ALL" || roleFilter !== "ALL"
                 ? "No events match your current filter criteria."
-                : "You have not organized any events yet. Get started by creating your first runsheet!"}
+                : "You do not have any organized or joined events yet. Create a runsheet or check received invitations!"}
             </p>
           </div>
-          <Link href="/events/create" className="inline-block">
-            <Button variant="primary" size="md" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold">
-              Create First Event
-            </Button>
-          </Link>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Link href="/events/create">
+              <Button variant="primary" size="md" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold">
+                Create First Event
+              </Button>
+            </Link>
+            <Link href="/invitations">
+              <Button variant="secondary" size="md">
+                Check Invitations
+              </Button>
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -187,6 +229,7 @@ export const EventsListView: React.FC = () => {
             const start = new Date(evt.startDate);
             const end = new Date(evt.endDate);
             const formattedDates = `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+            const isOrganizer = evt.organizerId === user?.userId;
 
             return (
               <div
@@ -198,9 +241,17 @@ export const EventsListView: React.FC = () => {
                   <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:14px_14px] opacity-15" />
 
                   <div className="relative z-10 flex items-center justify-between">
-                    <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[9px] font-semibold text-white/90">
-                      RunSheet
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {isOrganizer ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/80 backdrop-blur-md text-[9px] font-extrabold text-white shadow-xs">
+                          👑 Organizer
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/80 backdrop-blur-md text-[9px] font-extrabold text-white shadow-xs">
+                          👤 Team Member
+                        </span>
+                      )}
+                    </div>
                     <Badge variant={getStatusVariant(evt.status) as any} size="sm" className="capitalize">
                       {evt.status}
                     </Badge>
@@ -233,28 +284,45 @@ export const EventsListView: React.FC = () => {
                       </svg>
                       <span className="truncate">{evt.venue}</span>
                     </div>
+
+                    {!isOrganizer && evt.organizer && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                        <span>Organized by:</span>
+                        <span className="font-semibold text-slate-600 dark:text-slate-300">
+                          {evt.organizer.firstName} {evt.organizer.lastName}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
                   <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEventToDelete(evt)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                      title="Delete Event"
-                      aria-label="Delete Event"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    {isOrganizer ? (
+                      <button
+                        type="button"
+                        onClick={() => setEventToDelete(evt)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                        title="Delete Event"
+                        aria-label="Delete Event"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <span className="text-[11px] font-semibold text-slate-400">
+                        Joined Event
+                      </span>
+                    )}
 
                     <div className="flex items-center gap-2">
-                      <Link href={`/events/${evt.eventId}/edit`}>
-                        <Button variant="secondary" size="sm" className="text-xs">
-                          Edit
-                        </Button>
-                      </Link>
+                      {isOrganizer && (
+                        <Link href={`/events/${evt.eventId}/edit`}>
+                          <Button variant="secondary" size="sm" className="text-xs">
+                            Edit
+                          </Button>
+                        </Link>
+                      )}
                       <Link href={`/events/${evt.eventId}`}>
                         <Button variant="primary" size="sm" className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold">
                           View Details

@@ -203,6 +203,9 @@ export class NotificationService {
     const result = await this.prisma.notification.deleteMany({
       where: {
         expiresAt: { lt: new Date() },
+        eventMember: {
+          userId,
+        },
       },
     });
 

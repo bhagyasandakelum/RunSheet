@@ -23,6 +23,8 @@ import {
   LiveTimelinePanel,
 } from "@/features/dashboard";
 import { Button } from "@/components/ui/button";
+import { invitationService } from "@/services/invitation-service";
+import { Invitation } from "@/types/common/entities";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -34,6 +36,7 @@ export default function DashboardPage() {
     isOrganizer: isActualOrganizer,
     isLoading: isEventsLoading,
     setSelectedEventId,
+    refreshEvents,
   } = useEvent();
 
   // Active view: defaults to organizer if user organizes this event, else member
@@ -42,8 +45,25 @@ export default function DashboardPage() {
   // Data states
   const [organizerData, setOrganizerData] = useState<OrganizerDashboard | null>(null);
   const [memberData, setMemberData] = useState<MemberDashboard | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState<Invitation[]>([]);
+  const [isAcceptingInviteId, setIsAcceptingInviteId] = useState<string | null>(null);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for pending received invitations
+  const checkPendingInvitations = useCallback(async () => {
+    try {
+      const invs = await invitationService.getMyInvitations();
+      const pending = (invs || []).filter((i) => i.status === "Pending");
+      setPendingInvitations(pending);
+    } catch {
+      // Ignore background check failure
+    }
+  }, []);
+
+  useEffect(() => {
+    checkPendingInvitations();
+  }, [checkPendingInvitations]);
 
   useEffect(() => {
     if (isActualOrganizer) {
@@ -92,6 +112,20 @@ export default function DashboardPage() {
     loadDashboardData();
   }, [loadDashboardData]);
 
+  const handleQuickAccept = async (invitation: Invitation) => {
+    try {
+      setIsAcceptingInviteId(invitation.invitationId);
+      await invitationService.acceptInvitation(invitation.invitationId);
+      await refreshEvents();
+      setSelectedEventId(invitation.eventId);
+      await checkPendingInvitations();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Failed to accept invitation.");
+    } finally {
+      setIsAcceptingInviteId(null);
+    }
+  };
+
   if (isEventsLoading) {
     return (
       <div className="py-24 text-center text-xs font-semibold text-slate-400">
@@ -103,30 +137,86 @@ export default function DashboardPage() {
   // 0 Events State
   if (events.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto py-20 px-6 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xs space-y-5">
-        <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            No Events Created Yet
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-            Get started by setting up your first event, organizing specialized teams, and orchestrating tasks seamlessly.
-          </p>
-        </div>
-        <div className="pt-2">
-          <Link href="/events/create">
-            <Button
-              variant="primary"
-              size="lg"
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs px-6"
-            >
-              + Create Your First Event
-            </Button>
-          </Link>
+      <div className="max-w-2xl mx-auto py-16 px-6 space-y-6">
+        {/* If user has pending invitations received */}
+        {pendingInvitations.length > 0 && (
+          <div className="p-6 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-500/30 shadow-xs space-y-4 animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                ✉️
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-amber-950 dark:text-amber-200">
+                  You Have {pendingInvitations.length} Pending Event Invitation{pendingInvitations.length > 1 ? "s" : ""}!
+                </h3>
+                <p className="text-xs text-amber-800/80 dark:text-amber-300/80">
+                  An organizer has invited you to collaborate as a team member. Accept below to access the event runsheet.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {pendingInvitations.map((inv) => (
+                <div
+                  key={inv.invitationId}
+                  className="p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                >
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                      {inv.eventName || "Event Operations"}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Invited by: <span className="font-semibold text-slate-700 dark:text-slate-300">{inv.organizerName || "Organizer"}</span>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      isLoading={isAcceptingInviteId === inv.invitationId}
+                      onClick={() => handleQuickAccept(inv)}
+                      className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                    >
+                      Accept & Join
+                    </Button>
+                    <Link href="/invitations">
+                      <Button size="sm" variant="secondary" className="text-xs">
+                        Review Details
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="p-8 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xs space-y-5">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              Create Your First Event
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+              Organize events, create teams, assign tasks, and track team members in real time.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link href="/events/create">
+              <Button
+                variant="primary"
+                size="lg"
+                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs px-6"
+              >
+                + Create New Event
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -261,6 +351,23 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Pending Invitations Alert Banner */}
+      {pendingInvitations.length > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base">✉️</span>
+            <span className="font-bold text-amber-900 dark:text-amber-200">
+              You have {pendingInvitations.length} pending event invitation{pendingInvitations.length > 1 ? "s" : ""} waiting for your response.
+            </span>
+          </div>
+          <Link href="/invitations">
+            <Button size="sm" variant="primary" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs">
+              Review & Accept →
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">

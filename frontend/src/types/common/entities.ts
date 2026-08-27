@@ -47,6 +47,15 @@ export interface Invitation {
   createdAt: string;
   updatedAt: string;
 
+  // Enriched fields from getMyInvitations
+  eventName?: string;
+  eventVenue?: string;
+  eventStartDate?: string;
+  eventEndDate?: string;
+  eventDescription?: string | null;
+  organizerName?: string;
+  organizerEmail?: string;
+
   // Relations
   event?: Event;
   user?: User;

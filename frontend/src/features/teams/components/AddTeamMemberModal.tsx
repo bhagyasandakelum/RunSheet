@@ -28,6 +28,7 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "success" | "info"; message: string } | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -35,6 +36,7 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
       setSelectedUser(null);
       setManualEmail("");
       setError(null);
+      setFeedback(null);
       return;
     }
 
@@ -63,13 +65,15 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
     try {
       setIsSubmitting(true);
       setError(null);
+      setFeedback(null);
 
+      let res: any;
       if (selectedUser) {
-        await teamMembershipService.addMemberToTeam(team.teamId, {
+        res = await teamMembershipService.addMemberToTeam(team.teamId, {
           userId: selectedUser.userId,
         });
       } else if (manualEmail.trim()) {
-        await teamMembershipService.addMemberToTeam(team.teamId, {
+        res = await teamMembershipService.addMemberToTeam(team.teamId, {
           email: manualEmail.trim(),
         });
       } else {
@@ -78,8 +82,19 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
         return;
       }
 
-      onSuccess();
-      onClose();
+      if (res?.status === "InvitationSent" || res?.status === "InvitationPending") {
+        setFeedback({
+          type: "info",
+          message: res.message || "Invitation sent! The user will join this team once they accept the invitation in their dashboard.",
+        });
+        setTimeout(() => {
+          onSuccess();
+          onClose();
+        }, 1800);
+      } else {
+        onSuccess();
+        onClose();
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to add member to team.");
     } finally {
@@ -101,7 +116,7 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
               Add Member to {team.teamName}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Select an available user or add by email to join this team.
+              Select an available user or invite by email to join this team.
             </p>
           </div>
           <button
@@ -114,6 +129,15 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             </svg>
           </button>
         </div>
+
+        {feedback && (
+          <div className="mt-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+            <svg className="w-4 h-4 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{feedback.message}</span>
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-500/30 text-red-600 dark:text-red-400 text-xs font-semibold">

@@ -208,7 +208,13 @@ export class InvitationService {
       invitationId: inv.invitationId,
       eventId: inv.eventId,
       eventName: inv.event.eventName,
+      eventVenue: inv.event.venue,
+      eventStartDate: inv.event.startDate,
+      eventEndDate: inv.event.endDate,
+      eventDescription: inv.event.description,
       organizerName: `${inv.event.organizer.firstName} ${inv.event.organizer.lastName}`,
+      organizerEmail: inv.event.organizer.email,
+      event: inv.event,
       status: inv.status,
       expiresAt: inv.expiresAt,
       createdAt: inv.createdAt,
@@ -253,12 +259,23 @@ export class InvitationService {
         },
       });
 
-      const member = await tx.eventMember.create({
-        data: {
-          eventId: invitation.eventId,
-          userId: currentUserId,
+      let member = await tx.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: invitation.eventId,
+            userId: currentUserId,
+          },
         },
       });
+
+      if (!member) {
+        member = await tx.eventMember.create({
+          data: {
+            eventId: invitation.eventId,
+            userId: currentUserId,
+          },
+        });
+      }
 
       const notifExpiresAt = new Date();
       notifExpiresAt.setDate(notifExpiresAt.getDate() + 7);
@@ -277,6 +294,7 @@ export class InvitationService {
       return {
         message: 'Invitation accepted successfully',
         invitation: updatedInvitation,
+        event: invitation.event,
       };
     });
   }

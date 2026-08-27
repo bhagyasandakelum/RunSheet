@@ -57,12 +57,28 @@ export class EventService {
 
   async getMyEvents(userId: string) {
     return this.prisma.event.findMany({
-      where: { organizerId: userId },
+      where: {
+        OR: [
+          { organizerId: userId },
+          { members: { some: { userId } } },
+        ],
+      },
+      include: {
+        organizer: {
+          select: {
+            userId: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            profilePhotoUrl: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async getEventDetails(eventId: string) {
+  async getEventDetails(eventId: string, userId: string) {
     const event = await this.prisma.event.findUnique({
       where: { eventId },
       include: {
@@ -74,6 +90,9 @@ export class EventService {
             email: true,
             profilePhotoUrl: true,
           },
+        },
+        members: {
+          where: { userId },
         },
         _count: {
           select: {
@@ -88,6 +107,15 @@ export class EventService {
       throw new NotFoundException('Event not found');
     }
 
+    const isOrganizer = event.organizerId === userId;
+    const isMember = event.members.length > 0;
+
+    if (!isOrganizer && !isMember) {
+      throw new ForbiddenException(
+        'You must be a member or organizer of this event to view its details',
+      );
+    }
+
     const taskCount = await this.prisma.task.count({
       where: {
         team: {
@@ -96,7 +124,7 @@ export class EventService {
       },
     });
 
-    const { _count, ...eventDetails } = event;
+    const { _count, members, ...eventDetails } = event;
 
     return {
       ...eventDetails,
