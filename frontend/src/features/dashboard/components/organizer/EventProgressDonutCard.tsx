@@ -12,18 +12,18 @@ export interface EventProgressDonutCardProps {
 }
 
 export const EventProgressDonutCard: React.FC<EventProgressDonutCardProps> = ({
-  progressPercentage = 70,
-  completed = 41,
-  inProgress = 12,
-  pending = 2,
-  overdue = 3,
-  statusLabel = "Excellent Progress",
+  progressPercentage = 0,
+  completed = 0,
+  inProgress = 0,
+  pending = 0,
+  overdue = 0,
+  statusLabel = "Not Started",
 }) => {
   // SVG Donut calculation
   const radius = 70;
   const strokeWidth = 18;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercentage / 100) * circumference;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, progressPercentage)) / 100) * circumference;
 
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col justify-between select-none">

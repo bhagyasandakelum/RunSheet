@@ -36,9 +36,9 @@ export const RecentlyJoinedPanel: React.FC<RecentlyJoinedPanelProps> = ({ member
           </p>
         ) : (
           displayList.map((m) => {
-            const name = m.user ? `${m.user.firstName} ${m.user.lastName}` : `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Event Volunteer";
-            const email = m.user?.email || m.email || "volunteer@runsheet.io";
-            const initials = name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "EV";
+            const name = m.user ? `${m.user.firstName} ${m.user.lastName}`.trim() : `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Team Member";
+            const email = m.user?.email || m.email || "";
+            const initials = name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "TM";
             const team = m.teamName || m.teamMembership?.team?.teamName || "Unassigned";
 
             return (

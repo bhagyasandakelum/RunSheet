@@ -2,29 +2,25 @@
 
 import React from "react";
 
-export interface OrganizerMetricsData {
-  teamsCount: number;
-  membersCount: number;
-  totalTasks: number;
-  completedTasks: number;
-  completionPercentage: number;
-  pendingInvites?: number;
-  overdueTasks: number;
-}
-
-export interface OrganizerMetricCardsProps {
-  metrics?: OrganizerMetricsData;
-}
-
-export const OrganizerMetricCards: React.FC<OrganizerMetricCardsProps> = ({
+export const OrganizerMetricCards: React.FC<{
+  metrics?: {
+    teamsCount: number;
+    membersCount: number;
+    totalTasks: number;
+    completedTasks: number;
+    completionPercentage: number;
+    pendingInvites?: number;
+    overdueTasks: number;
+  };
+}> = ({
   metrics = {
-    teamsCount: 6,
-    membersCount: 42,
-    totalTasks: 58,
-    completedTasks: 41,
-    completionPercentage: 70,
-    pendingInvites: 7,
-    overdueTasks: 3,
+    teamsCount: 0,
+    membersCount: 0,
+    totalTasks: 0,
+    completedTasks: 0,
+    completionPercentage: 0,
+    pendingInvites: 0,
+    overdueTasks: 0,
   },
 }) => {
   return (
@@ -68,7 +64,7 @@ export const OrganizerMetricCards: React.FC<OrganizerMetricCardsProps> = ({
         </p>
       </div>
 
-      {/* 4. Completed (Vibrant Green Filled Card) */}
+      {/* 4. Completed */}
       <div className="p-4 rounded-2xl bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25 flex flex-col justify-between transition-all hover:brightness-105">
         <div className="flex items-center justify-between font-bold text-xs opacity-95">
           <span>Completed</span>
@@ -97,11 +93,11 @@ export const OrganizerMetricCards: React.FC<OrganizerMetricCardsProps> = ({
           </svg>
         </div>
         <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-3">
-          {metrics.pendingInvites ?? 7}
+          {metrics.pendingInvites ?? 0}
         </p>
       </div>
 
-      {/* 6. Overdue Tasks (Soft Red Background) */}
+      {/* 6. Overdue Tasks */}
       <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 shadow-xs flex flex-col justify-between transition-all hover:shadow-md">
         <div className="flex items-center justify-between text-rose-700 dark:text-rose-400 font-semibold text-xs">
           <span>Overdue Tasks</span>

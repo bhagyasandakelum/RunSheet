@@ -23,42 +23,42 @@ export interface TaskAnalyticsCardProps {
 
 export const TaskAnalyticsCard: React.FC<TaskAnalyticsCardProps> = ({
   statusDistribution = {
-    pending: 2,
-    inProgress: 12,
-    completed: 41,
-    overdue: 3,
+    pending: 0,
+    inProgress: 0,
+    completed: 0,
+    overdue: 0,
   },
   priorityLevels = {
-    low: 15,
-    medium: 25,
-    high: 12,
-    critical: 6,
+    low: 0,
+    medium: 0,
+    high: 0,
+    critical: 0,
   },
 }) => {
-  const pending = statusDistribution.pending ?? 2;
-  const inProgress = statusDistribution.inProgress ?? 12;
-  const completed = statusDistribution.completed ?? 41;
-  const overdue = statusDistribution.overdue ?? 3;
+  const pending = statusDistribution.pending ?? 0;
+  const inProgress = statusDistribution.inProgress ?? 0;
+  const completed = statusDistribution.completed ?? 0;
+  const overdue = statusDistribution.overdue ?? 0;
 
   const maxStatus = Math.max(pending, inProgress, completed, overdue, 1);
 
   // Height percentages for vertical bars
-  const pHeight = Math.max((pending / maxStatus) * 100, 12);
-  const ipHeight = Math.max((inProgress / maxStatus) * 100, 24);
-  const cHeight = Math.max((completed / maxStatus) * 100, 85);
-  const oHeight = Math.max((overdue / maxStatus) * 100, 18);
+  const pHeight = pending > 0 ? Math.max((pending / maxStatus) * 100, 8) : 4;
+  const ipHeight = inProgress > 0 ? Math.max((inProgress / maxStatus) * 100, 8) : 4;
+  const cHeight = completed > 0 ? Math.max((completed / maxStatus) * 100, 8) : 4;
+  const oHeight = overdue > 0 ? Math.max((overdue / maxStatus) * 100, 8) : 4;
 
   // Priority counts & max
-  const low = priorityLevels.low ?? 15;
-  const medium = priorityLevels.medium ?? 25;
-  const high = priorityLevels.high ?? 12;
-  const critical = priorityLevels.critical ?? 6;
+  const low = priorityLevels.low ?? 0;
+  const medium = priorityLevels.medium ?? 0;
+  const high = priorityLevels.high ?? 0;
+  const critical = priorityLevels.critical ?? 0;
   const maxPriority = Math.max(low, medium, high, critical, 1);
 
-  const lowWidth = (low / maxPriority) * 100;
-  const medWidth = (medium / maxPriority) * 100;
-  const highWidth = (high / maxPriority) * 100;
-  const critWidth = (critical / maxPriority) * 100;
+  const lowWidth = low > 0 ? (low / maxPriority) * 100 : 0;
+  const medWidth = medium > 0 ? (medium / maxPriority) * 100 : 0;
+  const highWidth = high > 0 ? (high / maxPriority) * 100 : 0;
+  const critWidth = critical > 0 ? (critical / maxPriority) * 100 : 0;
 
   return (
     <div className="p-6 rounded-3xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col justify-between select-none">
@@ -82,6 +82,7 @@ export const TaskAnalyticsCard: React.FC<TaskAnalyticsCardProps> = ({
                 className="w-full rounded-t-lg bg-sky-200 dark:bg-sky-400 transition-all duration-700 hover:brightness-110"
                 title={`Pending: ${pending}`}
               />
+              <span className="text-[10px] font-bold text-slate-500">P</span>
             </div>
 
             {/* Bar 2: In Progress */}
@@ -91,6 +92,7 @@ export const TaskAnalyticsCard: React.FC<TaskAnalyticsCardProps> = ({
                 className="w-full rounded-t-lg bg-[#0284C7] dark:bg-[#38BDF8] transition-all duration-700 hover:brightness-110"
                 title={`In Progress: ${inProgress}`}
               />
+              <span className="text-[10px] font-bold text-slate-500">IP</span>
             </div>
 
             {/* Bar 3: Completed */}
@@ -100,6 +102,7 @@ export const TaskAnalyticsCard: React.FC<TaskAnalyticsCardProps> = ({
                 className="w-full rounded-t-lg bg-[#15803D] dark:bg-[#22C55E] transition-all duration-700 hover:brightness-110"
                 title={`Completed: ${completed}`}
               />
+              <span className="text-[10px] font-bold text-slate-500">C</span>
             </div>
 
             {/* Bar 4: Overdue */}
@@ -109,6 +112,7 @@ export const TaskAnalyticsCard: React.FC<TaskAnalyticsCardProps> = ({
                 className="w-full rounded-t-lg bg-[#B91C1C] dark:bg-[#EF4444] transition-all duration-700 hover:brightness-110"
                 title={`Overdue: ${overdue}`}
               />
+              <span className="text-[10px] font-bold text-slate-500">O</span>
             </div>
           </div>
         </div>

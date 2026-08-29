@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { EventLivePreview } from "./EventLivePreview";
-import { VenueMapPreview } from "./VenueMapPreview";
 
 export const CreateEventForm: React.FC = () => {
   const router = useRouter();
@@ -69,7 +68,6 @@ export const CreateEventForm: React.FC = () => {
         endDate: new Date(endDate).toISOString(),
       });
 
-      // If user chose Planning status (not Draft), update status to Planning
       const desiredStatus = asDraft ? EventStatus.Draft : selectedStatus;
       if (desiredStatus !== EventStatus.Draft && createdEvent.eventId) {
         try {
@@ -77,7 +75,7 @@ export const CreateEventForm: React.FC = () => {
             status: desiredStatus,
           });
         } catch {
-          // Fallback if status update failed non-critically
+          // Status update fallback
         }
       }
 
@@ -91,11 +89,11 @@ export const CreateEventForm: React.FC = () => {
     }
   };
 
-  const organizerName = user ? `${user.firstName} ${user.lastName}` : "Alex Rivera";
-  const organizerEmail = user?.email || "alex@runsheet.io";
+  const organizerName = user ? `${user.firstName} ${user.lastName}`.trim() : "Event Organizer";
+  const organizerEmail = user?.email || "";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12 select-none">
       {/* Top Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
@@ -117,7 +115,7 @@ export const CreateEventForm: React.FC = () => {
 
       {/* Main Grid: Form left (2/3), Live Preview right (1/3) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Form Area (2 cols on desktop) */}
+        {/* Left Form Area */}
         <div className="lg:col-span-2 space-y-6">
           {/* Card 1: Basic Information */}
           <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
@@ -143,28 +141,21 @@ export const CreateEventForm: React.FC = () => {
                   setEventName(e.target.value);
                   if (errors.eventName) setErrors({ ...errors, eventName: "" });
                 }}
-                placeholder="e.g. AI Summit 2026"
+                placeholder="e.g. Annual Tech Symposium"
                 error={errors.eventName}
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* Description with formatting header */}
+            {/* Description */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                  Description
-                </label>
-                <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 text-xs">
-                  <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[10px]">B</span>
-                  <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[10px] italic">I</span>
-                  <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-[10px] underline">U</span>
-                </div>
-              </div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                Description
+              </label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="The premier gathering for artificial intelligence professionals, researchers, and enthusiasts. Join us for 3 days of keynotes, workshops, and networking."
+                placeholder="Provide details and operational objectives for this event."
                 rows={4}
                 disabled={isSubmitting}
               />
@@ -182,18 +173,30 @@ export const CreateEventForm: React.FC = () => {
                   </svg>
                 </span>
                 <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Location
+                  Location / Venue
                 </h2>
               </div>
-              <VenueMapPreview
-                venue={venue}
-                onChangeVenue={(val) => {
-                  setVenue(val);
-                  if (errors.venue) setErrors({ ...errors, venue: "" });
-                }}
-                error={errors.venue}
-                disabled={isSubmitting}
-              />
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Venue <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={venue}
+                  onChange={(e) => {
+                    setVenue(e.target.value);
+                    if (errors.venue) setErrors({ ...errors, venue: "" });
+                  }}
+                  placeholder="e.g. Main Auditorium / Convention Hall"
+                  error={errors.venue}
+                  disabled={isSubmitting}
+                  leftIcon={
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                />
+              </div>
             </div>
 
             {/* Schedule Card */}
@@ -240,11 +243,6 @@ export const CreateEventForm: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <span>⏱</span>
-                <span>Times are saved in your local timezone and synced in UTC.</span>
-              </div>
             </div>
           </div>
 
@@ -273,8 +271,8 @@ export const CreateEventForm: React.FC = () => {
                   className="w-full h-10 px-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   disabled={isSubmitting}
                 >
-                  <option value={EventStatus.Planning}>Planning (Recommended for prep)</option>
-                  <option value={EventStatus.Draft}>Draft (Work in progress)</option>
+                  <option value={EventStatus.Planning}>Planning</option>
+                  <option value={EventStatus.Draft}>Draft</option>
                 </select>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
                   You can transition the event to &ldquo;Active&rdquo; when ready to launch operations.
@@ -304,7 +302,7 @@ export const CreateEventForm: React.FC = () => {
                     {organizerName}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {organizerEmail}
+                    {organizerEmail || "Organizer account"}
                   </p>
                 </div>
               </div>
@@ -345,13 +343,13 @@ export const CreateEventForm: React.FC = () => {
         {/* Right Sidebar: Live Preview */}
         <div className="space-y-6 lg:sticky lg:top-20">
           <EventLivePreview
-            eventName={eventName || "AI Summit 2026"}
-            venue={venue || "Moscone Center, SF"}
+            eventName={eventName || "Event Title"}
+            venue={venue || "Venue / Location"}
             startDate={startDate}
             endDate={endDate}
             status={selectedStatus}
             description={description}
-            progress={68}
+            progress={0}
           />
         </div>
       </div>

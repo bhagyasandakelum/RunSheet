@@ -4,7 +4,6 @@
  */
 
 export * from "./components/EventLivePreview";
-export * from "./components/VenueMapPreview";
 export * from "./components/InviteMembersModal";
 export * from "./components/CreateTeamModal";
 export * from "./components/DeleteEventModal";

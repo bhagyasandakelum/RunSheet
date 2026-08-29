@@ -46,8 +46,7 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
       onStatusChange(item.taskAssignmentId, nextStatus);
     }
 
-    // Persist if not demo ID
-    if (!item.taskAssignmentId.startsWith("ta-demo")) {
+    if (item.taskAssignmentId) {
       setUpdatingId(item.taskAssignmentId);
       try {
         await taskAssignmentService.updateAssignmentStatus(item.taskAssignmentId, {
@@ -109,7 +108,7 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
   const displayList = localItems;
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 md:p-6 shadow-xs">
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 md:p-6 shadow-xs select-none">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
@@ -168,32 +167,32 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
                     </p>
                   </td>
 
-                {/* Priority */}
-                <td className="py-3.5 px-4 whitespace-nowrap">
-                  {renderPriorityBadge(item.priority)}
-                </td>
+                  {/* Priority */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    {renderPriorityBadge(item.priority)}
+                  </td>
 
-                {/* Status */}
-                <td className="py-3.5 px-4 whitespace-nowrap">
-                  {renderStatusBadge(item.assignmentStatus)}
-                </td>
+                  {/* Status */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    {renderStatusBadge(item.assignmentStatus)}
+                  </td>
 
-                {/* Action */}
-                <td className="py-3.5 pl-4 text-right whitespace-nowrap">
-                  <button
-                    onClick={() => handleToggleStatus(item)}
-                    disabled={updatingId === item.taskAssignmentId}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                    title="Click to toggle status"
-                  >
-                    {item.assignmentStatus === "Completed" ? (
-                      <span className="text-emerald-600 dark:text-emerald-400">Reopen</span>
-                    ) : item.assignmentStatus === "InProgress" ? (
-                      <span className="text-emerald-600 dark:text-emerald-400">Mark Done</span>
-                    ) : (
-                      <span>Start</span>
-                    )}
-                  </button>
+                  {/* Action */}
+                  <td className="py-3.5 pl-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => handleToggleStatus(item)}
+                      disabled={updatingId === item.taskAssignmentId}
+                      className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                      title="Click to toggle status"
+                    >
+                      {item.assignmentStatus === "Completed" ? (
+                        <span className="text-emerald-600 dark:text-emerald-400">Reopen</span>
+                      ) : item.assignmentStatus === "InProgress" ? (
+                        <span className="text-emerald-600 dark:text-emerald-400">Mark Done</span>
+                      ) : (
+                        <span>Start</span>
+                      )}
+                    </button>
                   </td>
                 </tr>
               ))

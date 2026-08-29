@@ -132,7 +132,7 @@ export const SettingsView: React.FC = () => {
                     {user?.email}
                   </p>
                   <span className="inline-block mt-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-500/20">
-                    Event Organizer
+                    Active Account
                   </span>
                 </div>
               </div>

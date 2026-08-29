@@ -19,18 +19,18 @@ export interface MetricCardsProps {
 
 export const MetricCards: React.FC<MetricCardsProps> = ({
   data = {
-    assigned: 12,
-    completed: 8,
-    pending: 3,
-    overdue: 1,
-    assignedTrend: "+2 since yesterday",
-    completedTrend: "Great progress",
-    pendingTrend: "Steady",
-    overdueTrend: "Action required",
+    assigned: 0,
+    completed: 0,
+    pending: 0,
+    overdue: 0,
+    assignedTrend: "Assigned tasks",
+    completedTrend: "Completed tasks",
+    pendingTrend: "Awaiting action",
+    overdueTrend: "Overdue items",
   },
 }) => {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 select-none">
       {/* 1. ASSIGNED TASKS */}
       <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between">
         <div className="flex items-center justify-between">
@@ -50,11 +50,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 17l9.2-9.2M17 17V8H8" />
-          </svg>
-          <span>{data.assignedTrend || "+2 since yesterday"}</span>
+        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span>{data.assignedTrend || "Assigned tasks"}</span>
         </div>
       </div>
 
@@ -77,11 +74,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 17l9.2-9.2M17 17V8H8" />
-          </svg>
-          <span>{data.completedTrend || "Great progress"}</span>
+        <div className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+          <span>{data.completedTrend || "Completed tasks"}</span>
         </div>
       </div>
 
@@ -104,13 +98,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
-          <span className="font-bold">—</span>
-          <span>{data.pendingTrend || "Steady"}</span>
+        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span>{data.pendingTrend || "Awaiting action"}</span>
         </div>
       </div>
 
-      {/* 4. OVERDUE (Red Alert Card) */}
+      {/* 4. OVERDUE */}
       <div className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-[#fee2e2]/70 dark:bg-red-950/30 p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold tracking-wider text-red-700 dark:text-red-400 uppercase">
@@ -129,11 +122,8 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1 text-[11px] font-medium text-red-700 dark:text-red-400">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 7l-9.2 9.2M8 7v9h9" />
-          </svg>
-          <span>{data.overdueTrend || "Action required"}</span>
+        <div className="text-[11px] font-medium text-red-700 dark:text-red-400">
+          <span>{data.overdueTrend || "Overdue items"}</span>
         </div>
       </div>
     </div>

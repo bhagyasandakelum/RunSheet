@@ -20,7 +20,6 @@ import {
   ActionItemsTable,
   MyTeamCard,
   ActiveEventCard,
-  LiveTimelinePanel,
 } from "@/features/dashboard";
 import { Button } from "@/components/ui/button";
 import { invitationService } from "@/services/invitation-service";
@@ -438,18 +437,16 @@ export default function DashboardPage() {
             eventName={memberEventName}
           />
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 space-y-6">
-              <MetricCards data={memberStats} />
-              <ActionItemsTable items={memberData?.actionItems || []} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <MyTeamCard team={memberData?.myTeam} />
-                <ActiveEventCard event={memberData?.activeEvent} />
-              </div>
-            </div>
-            <div className="xl:col-span-1">
-              <LiveTimelinePanel />
-            </div>
+          {/* Member Metric Cards */}
+          <MetricCards data={memberStats} />
+
+          {/* Action Items List */}
+          <ActionItemsTable items={memberData?.actionItems || []} />
+
+          {/* Team and Active Event Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <MyTeamCard team={memberData?.myTeam} />
+            <ActiveEventCard event={memberData?.activeEvent} />
           </div>
         </div>
       )}

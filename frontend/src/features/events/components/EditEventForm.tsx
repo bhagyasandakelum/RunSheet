@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { EventLivePreview } from "./EventLivePreview";
-import { VenueMapPreview } from "./VenueMapPreview";
 import { DeleteEventModal } from "./DeleteEventModal";
 
 export interface EditEventFormProps {
@@ -189,9 +188,9 @@ export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
   const completion = dashboardData?.overallProgress ?? dashboardData?.taskSummary?.completedPercentage ?? 0;
 
   const organizerName = eventData.organizer
-    ? `${eventData.organizer.firstName} ${eventData.organizer.lastName}`
-    : "Alex Rivera";
-  const organizerEmail = eventData.organizer?.email || "alex@runsheet.io";
+    ? `${eventData.organizer.firstName} ${eventData.organizer.lastName}`.trim()
+    : "Event Organizer";
+  const organizerEmail = eventData.organizer?.email || "";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
@@ -344,15 +343,27 @@ export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
                   Venue & Location
                 </h2>
               </div>
-              <VenueMapPreview
-                venue={venue}
-                onChangeVenue={(val) => {
-                  setVenue(val);
-                  if (errors.venue) setErrors({ ...errors, venue: "" });
-                }}
-                error={errors.venue}
-                disabled={isSaving}
-              />
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Venue <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={venue}
+                  onChange={(e) => {
+                    setVenue(e.target.value);
+                    if (errors.venue) setErrors({ ...errors, venue: "" });
+                  }}
+                  placeholder="e.g. Main Auditorium / Convention Hall"
+                  error={errors.venue}
+                  disabled={isSaving}
+                  leftIcon={
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                />
+              </div>
             </div>
           </div>
 
