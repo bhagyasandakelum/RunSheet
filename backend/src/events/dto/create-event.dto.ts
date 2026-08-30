@@ -1,4 +1,5 @@
-import { IsDateString, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { EventStatus } from '@prisma/client';
 
 export class CreateEventDto {
   @IsNotEmpty()
@@ -22,4 +23,8 @@ export class CreateEventDto {
   @IsNotEmpty()
   @IsDateString({}, { message: 'endDate must be a valid ISO 8601 date string' })
   endDate: string;
+
+  @IsOptional()
+  @IsEnum(EventStatus)
+  status?: EventStatus;
 }

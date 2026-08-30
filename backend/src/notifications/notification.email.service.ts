@@ -91,6 +91,17 @@ Message: ${payload.bodyText}
     await this.sendEmail({ toEmail, recipientName, subject, bodyHtml, bodyText });
   }
 
+  async sendTaskUpdated(toEmail: string, recipientName: string, taskTitle: string, newStatus: string, updatedByName: string): Promise<void> {
+    const subject = `Task Updated: ${taskTitle}`;
+    const bodyText = `Hello ${recipientName}, the task "${taskTitle}" status has been updated to ${newStatus} by ${updatedByName}.`;
+    const bodyHtml = `
+      <h2>Task Status Updated</h2>
+      <p>Hello ${recipientName},</p>
+      <p>The task <strong>${taskTitle}</strong> status has been updated to <strong>${newStatus}</strong> by ${updatedByName}.</p>
+    `;
+    await this.sendEmail({ toEmail, recipientName, subject, bodyHtml, bodyText });
+  }
+
   async sendAnnouncement(toEmail: string, recipientName: string, title: string, message: string, eventName: string): Promise<void> {
     const subject = `Announcement [${eventName}]: ${title}`;
     const bodyText = `Hello ${recipientName}, Announcement: ${title} - ${message}`;

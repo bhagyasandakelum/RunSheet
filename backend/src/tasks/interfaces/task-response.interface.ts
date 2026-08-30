@@ -5,6 +5,8 @@ export interface TaskTeamInfo {
   teamName: string;
   description: string | null;
   eventId: string;
+  leaderMembershipId?: string | null;
+  leader?: any;
 }
 
 export interface TaskEventInfo {

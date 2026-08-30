@@ -305,11 +305,21 @@ describe('RBAC Authorization Matrix & Security Audit Test Suite', () => {
       expect(res.status).toEqual(TaskStatus.Completed);
     });
 
-    it('Normal Team Member cannot modify overall Task.status (403 Forbidden)', async () => {
+    it('Assigned Team Member A can update overall Task.status (InProgress)', async () => {
+      prismaMock.task.findUnique.mockResolvedValue(MOCK_TASK_A);
+      prismaMock.task.update.mockResolvedValue({ ...MOCK_TASK_A, status: TaskStatus.InProgress });
+
+      const res = await taskService.updateTaskStatus(TASK_A_ID, MEMBER_A_ID, {
+        status: TaskStatus.InProgress,
+      });
+      expect(res.status).toEqual(TaskStatus.InProgress);
+    });
+
+    it('Unassigned Member cannot modify overall Task.status (403 Forbidden)', async () => {
       prismaMock.task.findUnique.mockResolvedValue(MOCK_TASK_A);
 
       await expect(
-        taskService.updateTaskStatus(TASK_A_ID, MEMBER_A_ID, {
+        taskService.updateTaskStatus(TASK_A_ID, UNRELATED_USER_ID, {
           status: TaskStatus.Completed,
         }),
       ).rejects.toThrow(ForbiddenException);

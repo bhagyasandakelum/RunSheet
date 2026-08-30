@@ -82,7 +82,7 @@ describe('TeamService', () => {
   describe('createTeam', () => {
     it('should create a team successfully for organizer', async () => {
       prismaMock.event.findUnique.mockResolvedValue(mockEvent);
-      prismaMock.team.findUnique.mockResolvedValue(null);
+      prismaMock.team.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(mockTeam);
       prismaMock.team.create.mockResolvedValue(mockTeam);
 
       const result = await service.createTeam('event-uuid-1', 'user-uuid-1', {

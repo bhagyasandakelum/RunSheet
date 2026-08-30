@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
+import { NotificationModule } from '../notifications/notification.module';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, NotificationModule],
   controllers: [TaskController],
   providers: [TaskService],
   exports: [TaskService],

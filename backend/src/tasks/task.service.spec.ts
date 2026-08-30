@@ -7,10 +7,12 @@ import {
 import { EventStatus, TaskPriority, TaskStatus } from '@prisma/client';
 import { TaskService } from './task.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notifications/notification.service';
 
 describe('TaskService', () => {
   let service: TaskService;
   let prismaMock: any;
+  let notificationMock: any;
 
   const mockUser = {
     userId: 'user-uuid-1',
@@ -26,15 +28,6 @@ describe('TaskService', () => {
     status: EventStatus.Active,
   };
 
-  const mockTeam = {
-    teamId: 'team-uuid-1',
-    eventId: 'event-uuid-1',
-    teamName: 'Branding Team',
-    description: 'Logo & Colors',
-    leaderMembershipId: 'tm-uuid-1',
-    event: mockEvent,
-  };
-
   const mockEventMember = {
     eventMemberId: 'em-uuid-1',
     eventId: 'event-uuid-1',
@@ -42,6 +35,18 @@ describe('TaskService', () => {
     user: mockUser,
     teamMembership: {
       teamMembershipId: 'tm-uuid-1',
+    },
+  };
+
+  const mockTeam = {
+    teamId: 'team-uuid-1',
+    eventId: 'event-uuid-1',
+    teamName: 'Branding Team',
+    description: 'Logo & Colors',
+    leaderMembershipId: 'tm-uuid-1',
+    event: mockEvent,
+    leader: {
+      eventMember: mockEventMember,
     },
   };
 
@@ -58,6 +63,15 @@ describe('TaskService', () => {
     updatedAt: new Date(),
     team: mockTeam,
     createdBy: mockEventMember,
+    assignments: [
+      {
+        teamMembership: {
+          eventMember: {
+            userId: 'assignee-uuid-1',
+          },
+        },
+      },
+    ],
     _count: { assignments: 2 },
   };
 
@@ -68,6 +82,9 @@ describe('TaskService', () => {
       },
       eventMember: {
         findUnique: jest.fn(),
+      },
+      user: {
+        findUnique: jest.fn().mockResolvedValue(mockUser),
       },
       team: {
         findUnique: jest.fn(),
@@ -88,12 +105,21 @@ describe('TaskService', () => {
       $transaction: jest.fn((callback) => callback(prismaMock)),
     };
 
+    notificationMock = {
+      createTaskAssignedNotification: jest.fn().mockResolvedValue({}),
+      createTaskStatusUpdatedNotification: jest.fn().mockResolvedValue({}),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TaskService,
         {
           provide: PrismaService,
           useValue: prismaMock,
+        },
+        {
+          provide: NotificationService,
+          useValue: notificationMock,
         },
       ],
     }).compile();
@@ -110,6 +136,7 @@ describe('TaskService', () => {
       prismaMock.team.findUnique.mockResolvedValue(mockTeam);
       prismaMock.eventMember.findUnique.mockResolvedValue(mockEventMember);
       prismaMock.task.create.mockResolvedValue(mockTask);
+      prismaMock.task.findUnique.mockResolvedValue(mockTask);
 
       const result = await service.createTask('team-uuid-1', 'user-uuid-1', {
         taskTitle: 'Create Logo Concepts',
@@ -169,7 +196,7 @@ describe('TaskService', () => {
   });
 
   describe('getTeamTasks', () => {
-    it('should return tasks for team', async () => {
+    it('should return tasks for team when requested by organizer', async () => {
       prismaMock.team.findUnique.mockResolvedValue(mockTeam);
       prismaMock.event.findUnique.mockResolvedValue(mockEvent);
       prismaMock.eventMember.findUnique.mockResolvedValue(mockEventMember);
@@ -179,6 +206,56 @@ describe('TaskService', () => {
 
       expect(tasks).toHaveLength(1);
       expect(tasks[0].taskTitle).toBe('Create Logo Concepts');
+    });
+
+    it('should throw ForbiddenException if member of another team requests tasks', async () => {
+      prismaMock.team.findUnique.mockResolvedValue(mockTeam);
+      prismaMock.event.findUnique.mockResolvedValue({ ...mockEvent, organizerId: 'other-organizer' });
+      prismaMock.eventMember.findUnique.mockResolvedValue({
+        ...mockEventMember,
+        userId: 'member-of-team-2',
+        teamMembership: { teamId: 'team-uuid-2' },
+      });
+
+      await expect(
+        service.getTeamTasks('team-uuid-1', 'member-of-team-2', {}),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('getEventTasks', () => {
+    it('should return all event tasks for organizer', async () => {
+      prismaMock.event.findUnique.mockResolvedValue(mockEvent);
+      prismaMock.eventMember.findUnique.mockResolvedValue(mockEventMember);
+      prismaMock.task.findMany.mockResolvedValue([mockTask]);
+
+      const tasks = await service.getEventTasks('event-uuid-1', 'user-uuid-1');
+
+      expect(tasks).toHaveLength(1);
+      expect(prismaMock.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { team: { eventId: 'event-uuid-1' } },
+        }),
+      );
+    });
+
+    it('should filter tasks by user teamId for regular team member', async () => {
+      prismaMock.event.findUnique.mockResolvedValue({ ...mockEvent, organizerId: 'organizer-uuid' });
+      prismaMock.eventMember.findUnique.mockResolvedValue({
+        ...mockEventMember,
+        userId: 'regular-member-uuid',
+        teamMembership: { teamId: 'team-uuid-1' },
+      });
+      prismaMock.task.findMany.mockResolvedValue([mockTask]);
+
+      const tasks = await service.getEventTasks('event-uuid-1', 'regular-member-uuid');
+
+      expect(tasks).toHaveLength(1);
+      expect(prismaMock.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { team: { eventId: 'event-uuid-1' }, teamId: 'team-uuid-1' },
+        }),
+      );
     });
   });
 
@@ -194,6 +271,20 @@ describe('TaskService', () => {
       expect(details.taskId).toBe('task-uuid-1');
       expect(details.assignmentCount).toBe(2);
       expect(details.completedAssignmentCount).toBe(1);
+    });
+
+    it('should throw ForbiddenException if user belongs to a different team', async () => {
+      prismaMock.task.findUnique.mockResolvedValue(mockTask);
+      prismaMock.event.findUnique.mockResolvedValue({ ...mockEvent, organizerId: 'other-organizer' });
+      prismaMock.eventMember.findUnique.mockResolvedValue({
+        ...mockEventMember,
+        userId: 'other-team-member',
+        teamMembership: { teamId: 'team-uuid-other' },
+      });
+
+      await expect(
+        service.getTaskDetails('task-uuid-1', 'other-team-member'),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw NotFoundException if task not found', async () => {
@@ -221,7 +312,7 @@ describe('TaskService', () => {
   });
 
   describe('updateTaskStatus', () => {
-    it('should update task status', async () => {
+    it('should update task status for organizer', async () => {
       prismaMock.task.findUnique.mockResolvedValue(mockTask);
       prismaMock.team.findUnique.mockResolvedValue(mockTeam);
       prismaMock.eventMember.findUnique.mockResolvedValue(mockEventMember);
@@ -232,6 +323,35 @@ describe('TaskService', () => {
       });
 
       expect(updated.status).toBe(TaskStatus.Completed);
+    });
+
+    it('should update task status for assigned member', async () => {
+      prismaMock.task.findUnique.mockResolvedValue(mockTask);
+      prismaMock.task.update.mockResolvedValue({ ...mockTask, status: TaskStatus.InProgress });
+
+      const updated = await service.updateTaskStatus('task-uuid-1', 'assignee-uuid-1', {
+        status: TaskStatus.InProgress,
+      });
+
+      expect(updated.status).toBe(TaskStatus.InProgress);
+    });
+
+    it('should throw ForbiddenException if an unauthorized member tries to update task status', async () => {
+      prismaMock.task.findUnique.mockResolvedValue({
+        ...mockTask,
+        team: {
+          ...mockTeam,
+          event: { ...mockEvent, organizerId: 'other-organizer' },
+          leader: { eventMember: { userId: 'other-leader' } },
+        },
+        assignments: [],
+      });
+
+      await expect(
+        service.updateTaskStatus('task-uuid-1', 'unauthorized-user', {
+          status: TaskStatus.Completed,
+        }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 

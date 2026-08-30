@@ -39,6 +39,9 @@ export class TeamService {
           userId,
         },
       },
+      include: {
+        teamMembership: true,
+      },
     });
 
     if (!isOrganizer && !isMember) {
@@ -47,7 +50,7 @@ export class TeamService {
       );
     }
 
-    return { event, isOrganizer };
+    return { event, isOrganizer, eventMember: isMember };
   }
 
   /**
@@ -102,8 +105,8 @@ export class TeamService {
     const isOrganizer = team.event.organizerId === userId;
     const isLeader = team.leader?.eventMember?.userId === userId;
 
-    if (!isOrganizer && !isLeader) {
-      throw new ForbiddenException('Only the event organizer or team leader can edit this team');
+    if (!isOrganizer) {
+      throw new ForbiddenException('Only the event organizer can edit this team');
     }
 
     if (

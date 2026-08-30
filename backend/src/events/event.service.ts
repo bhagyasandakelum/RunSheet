@@ -15,10 +15,10 @@ export class EventService {
   constructor(private readonly prisma: PrismaService) { }
 
   private readonly allowedStatusTransitions: Record<EventStatus, EventStatus[]> = {
-    [EventStatus.Draft]: [EventStatus.Planning, EventStatus.Cancelled],
-    [EventStatus.Planning]: [EventStatus.Active, EventStatus.Cancelled],
-    [EventStatus.Active]: [EventStatus.Completed, EventStatus.Cancelled],
-    [EventStatus.Completed]: [EventStatus.Archived],
+    [EventStatus.Draft]: [EventStatus.Active, EventStatus.Planning, EventStatus.Cancelled],
+    [EventStatus.Planning]: [EventStatus.Active, EventStatus.Draft, EventStatus.Cancelled],
+    [EventStatus.Active]: [EventStatus.Draft, EventStatus.Completed, EventStatus.Cancelled],
+    [EventStatus.Completed]: [EventStatus.Archived, EventStatus.Active],
     [EventStatus.Cancelled]: [],
     [EventStatus.Archived]: [],
   };
@@ -31,6 +31,8 @@ export class EventService {
       throw new BadRequestException('endDate must be after startDate');
     }
 
+    const eventStatus = createEventDto.status || EventStatus.Active;
+
     return this.prisma.$transaction(async (tx) => {
       const event = await tx.event.create({
         data: {
@@ -40,7 +42,7 @@ export class EventService {
           venue: createEventDto.venue,
           startDate,
           endDate,
-          status: EventStatus.Draft,
+          status: eventStatus,
         },
       });
 

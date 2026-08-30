@@ -20,10 +20,11 @@ export const CreateEventForm: React.FC = () => {
   const [venue, setVenue] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<EventStatus>(EventStatus.Planning);
+  const [selectedStatus, setSelectedStatus] = useState<EventStatus>(EventStatus.Active);
 
   // Status & Validation
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<"live" | "draft" | null>(null);
+  const isSubmitting = submittingAction !== null;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -56,28 +57,20 @@ export const CreateEventForm: React.FC = () => {
     if (!validate()) return;
 
     try {
-      setIsSubmitting(true);
+      setSubmittingAction(asDraft ? "draft" : "live");
       setApiError(null);
 
-      // Create in backend
+      const desiredStatus = asDraft ? EventStatus.Draft : selectedStatus;
+
+      // Create directly in backend
       const createdEvent = await eventService.createEvent({
         eventName: eventName.trim(),
         description: description.trim() || undefined,
         venue: venue.trim(),
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
-      });
-
-      const desiredStatus = asDraft ? EventStatus.Draft : selectedStatus;
-      if (desiredStatus !== EventStatus.Draft && createdEvent.eventId) {
-        try {
-          await eventService.updateEventStatus(createdEvent.eventId, {
-            status: desiredStatus,
-          });
-        } catch {
-          // Status update fallback
-        }
-      }
+        status: desiredStatus,
+      } as any);
 
       router.push(`/events/${createdEvent.eventId}`);
     } catch (err: any) {
@@ -85,7 +78,7 @@ export const CreateEventForm: React.FC = () => {
         err?.response?.data?.message || err?.message || "Failed to create event."
       );
     } finally {
-      setIsSubmitting(false);
+      setSubmittingAction(null);
     }
   };
 
@@ -269,13 +262,13 @@ export const CreateEventForm: React.FC = () => {
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as EventStatus)}
                   className="w-full h-10 px-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-                  disabled={isSubmitting}
+                  disabled={submittingAction !== null}
                 >
-                  <option value={EventStatus.Planning}>Planning</option>
+                  <option value={EventStatus.Active}>Live (Active)</option>
                   <option value={EventStatus.Draft}>Draft</option>
                 </select>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
-                  You can transition the event to &ldquo;Active&rdquo; when ready to launch operations.
+                  Events can be published Live immediately or saved as a Draft for future release.
                 </p>
               </div>
             </div>
@@ -322,7 +315,9 @@ export const CreateEventForm: React.FC = () => {
                 variant="secondary"
                 size="md"
                 onClick={() => handleSave(true)}
-                isLoading={isSubmitting}
+                disabled={submittingAction !== null}
+                isLoading={submittingAction === "draft"}
+                className="min-w-[130px]"
               >
                 Save as draft
               </Button>
@@ -331,8 +326,9 @@ export const CreateEventForm: React.FC = () => {
                 variant="primary"
                 size="md"
                 onClick={() => handleSave(false)}
-                isLoading={isSubmitting}
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                disabled={submittingAction !== null}
+                isLoading={submittingAction === "live"}
+                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold min-w-[140px]"
               >
                 Create Event
               </Button>

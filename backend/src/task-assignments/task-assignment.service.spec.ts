@@ -8,6 +8,7 @@ import {
 import { AssignmentStatus, EventStatus } from '@prisma/client';
 import { TaskAssignmentService } from './task-assignment.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notifications/notification.service';
 
 describe('TaskAssignmentService', () => {
   let service: TaskAssignmentService;
@@ -91,6 +92,9 @@ describe('TaskAssignmentService', () => {
       task: {
         findUnique: jest.fn(),
       },
+      user: {
+        findUnique: jest.fn().mockResolvedValue(mockUser),
+      },
       taskAssignment: {
         findUnique: jest.fn(),
         findMany: jest.fn(),
@@ -102,12 +106,21 @@ describe('TaskAssignmentService', () => {
       $transaction: jest.fn((callback) => callback(prismaMock)),
     };
 
+    const notificationMock = {
+      createTaskAssignedNotification: jest.fn().mockResolvedValue({}),
+      createTaskStatusUpdatedNotification: jest.fn().mockResolvedValue({}),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TaskAssignmentService,
         {
           provide: PrismaService,
           useValue: prismaMock,
+        },
+        {
+          provide: NotificationService,
+          useValue: notificationMock,
         },
       ],
     }).compile();

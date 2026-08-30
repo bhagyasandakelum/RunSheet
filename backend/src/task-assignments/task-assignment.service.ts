@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { AssignmentStatus, EventStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notifications/notification.service';
 import { AssignMemberDto } from './dto/assign-member.dto';
 import { UpdateAssignmentStatusDto } from './dto/update-assignment-status.dto';
 import {
@@ -19,7 +20,10 @@ import {
 
 @Injectable()
 export class TaskAssignmentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   /**
    * Helper: Verify user is organizer or member of event.
@@ -166,7 +170,7 @@ export class TaskAssignmentService {
       );
     }
 
-    return this.prisma.taskAssignment.create({
+    const created = await this.prisma.taskAssignment.create({
       data: {
         taskId,
         teamMembershipId: assignDto.teamMembershipId,
@@ -195,6 +199,23 @@ export class TaskAssignmentService {
         },
       },
     });
+
+    const assignerUser = await this.prisma.user.findUnique({
+      where: { userId },
+      select: { firstName: true, lastName: true },
+    });
+    const assignerName = assignerUser
+      ? `${assignerUser.firstName} ${assignerUser.lastName}`.trim()
+      : 'Team Lead';
+
+    this.notificationService.createTaskAssignedNotification(
+      created.teamMembership.eventMemberId,
+      task.taskId,
+      task.taskTitle,
+      assignerName,
+    ).catch(() => {});
+
+    return created;
   }
 
   /**
@@ -455,7 +476,7 @@ export class TaskAssignmentService {
           ? null
           : assignment.completedAt;
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       return tx.taskAssignment.update({
         where: { taskAssignmentId: assignmentId },
         data: {
@@ -464,6 +485,34 @@ export class TaskAssignmentService {
         },
       });
     });
+
+    // Notify organizer and team leader of progress update
+    let updaterName = 'A team member';
+    if (this.prisma.user?.findUnique) {
+      try {
+        const updaterUser = await this.prisma.user.findUnique({
+          where: { userId },
+          select: { firstName: true, lastName: true },
+        });
+        if (updaterUser) {
+          updaterName = `${updaterUser.firstName} ${updaterUser.lastName}`.trim();
+        }
+      } catch {}
+    }
+
+    if (this.notificationService?.createTaskStatusUpdatedNotification) {
+      this.notificationService.createTaskStatusUpdatedNotification(
+        assignment.task.taskId,
+        assignment.task.taskTitle,
+        updateDto.assignmentStatus,
+        assignment.task.team.eventId,
+        assignment.task.teamId,
+        userId,
+        updaterName,
+      ).catch(() => {});
+    }
+
+    return updated;
   }
 
   /**

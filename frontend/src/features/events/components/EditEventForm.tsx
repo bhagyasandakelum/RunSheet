@@ -20,10 +20,10 @@ export interface EditEventFormProps {
 
 // Backend allowed status transition rules
 const ALLOWED_STATUS_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
-  [EventStatus.Draft]: [EventStatus.Planning, EventStatus.Cancelled],
-  [EventStatus.Planning]: [EventStatus.Active, EventStatus.Cancelled],
-  [EventStatus.Active]: [EventStatus.Completed, EventStatus.Cancelled],
-  [EventStatus.Completed]: [EventStatus.Archived],
+  [EventStatus.Draft]: [EventStatus.Active, EventStatus.Planning, EventStatus.Cancelled],
+  [EventStatus.Planning]: [EventStatus.Active, EventStatus.Draft, EventStatus.Cancelled],
+  [EventStatus.Active]: [EventStatus.Draft, EventStatus.Completed, EventStatus.Cancelled],
+  [EventStatus.Completed]: [EventStatus.Archived, EventStatus.Active],
   [EventStatus.Cancelled]: [],
   [EventStatus.Archived]: [],
 };

@@ -299,8 +299,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 select-none pb-12">
-      {/* Top Role / Perspective Switcher Pill & Event Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Role / Perspective Switcher Pill */}
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs">
           <button
             type="button"
@@ -331,24 +331,6 @@ export default function DashboardPage() {
             <span>Member Dashboard</span>
           </button>
         </div>
-
-        {/* Event switcher selector */}
-        {events.length > 1 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400">Switch Event:</span>
-            <select
-              value={selectedEventId || ""}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#131B2E] border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 shadow-xs"
-            >
-              {events.map((evt) => (
-                <option key={evt.eventId} value={evt.eventId}>
-                  {evt.eventName}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
       </div>
 
       {/* Pending Invitations Alert Banner */}

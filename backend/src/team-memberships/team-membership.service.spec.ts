@@ -85,6 +85,9 @@ describe('TeamMembershipService', () => {
       task: {
         findMany: jest.fn(),
       },
+      taskAssignment: {
+        deleteMany: jest.fn(),
+      },
       $transaction: jest.fn((callback) => callback(prismaMock)),
     };
 

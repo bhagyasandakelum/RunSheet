@@ -405,6 +405,100 @@ export class NotificationService {
     }
   }
 
+  async createTaskStatusUpdatedNotification(
+    taskId: string,
+    taskTitle: string,
+    newStatus: string,
+    eventId: string,
+    teamId: string,
+    updatedByUserId: string,
+    updatedByName: string,
+  ) {
+    const event = await this.prisma.event.findUnique({
+      where: { eventId },
+    });
+
+    const team = await this.prisma.team.findUnique({
+      where: { teamId },
+      include: {
+        leader: {
+          include: {
+            eventMember: {
+              include: { user: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!event) return;
+
+    const recipientMemberIds = new Set<string>();
+    const recipients: { eventMemberId: string; email: string; name: string }[] = [];
+
+    // Notify Organizer if not updated by organizer
+    if (event.organizerId !== updatedByUserId) {
+      const organizerMember = await this.prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId: event.organizerId,
+          },
+        },
+        include: { user: true },
+      });
+
+      if (organizerMember) {
+        recipientMemberIds.add(organizerMember.eventMemberId);
+        recipients.push({
+          eventMemberId: organizerMember.eventMemberId,
+          email: organizerMember.user.email,
+          name: `${organizerMember.user.firstName} ${organizerMember.user.lastName}`,
+        });
+      }
+    }
+
+    // Notify Team Leader if not updated by team leader
+    if (team?.leader?.eventMember && team.leader.eventMember.userId !== updatedByUserId) {
+      const leaderMember = team.leader.eventMember;
+      if (!recipientMemberIds.has(leaderMember.eventMemberId)) {
+        recipientMemberIds.add(leaderMember.eventMemberId);
+        recipients.push({
+          eventMemberId: leaderMember.eventMemberId,
+          email: leaderMember.user.email,
+          name: `${leaderMember.user.firstName} ${leaderMember.user.lastName}`,
+        });
+      }
+    }
+
+    const isCompleted = newStatus === 'Completed';
+    const notificationType = isCompleted ? NotificationType.TaskCompleted : NotificationType.TaskUpdated;
+    const title = isCompleted ? 'Task Completed' : 'Task Status Updated';
+    const message = isCompleted
+      ? `The task "${taskTitle}" has been completed by ${updatedByName}.`
+      : `The task "${taskTitle}" status has been updated to "${newStatus}" by ${updatedByName}.`;
+
+    for (const r of recipients) {
+      await this.prisma.notification.create({
+        data: {
+          eventMemberId: r.eventMemberId,
+          relatedEventId: eventId,
+          relatedTaskId: taskId,
+          title,
+          message,
+          notificationType,
+          expiresAt: this.defaultExpirationDate,
+        },
+      });
+
+      if (isCompleted) {
+        this.emailService.sendTaskCompleted(r.email, r.name, taskTitle, updatedByName).catch(() => {});
+      } else {
+        this.emailService.sendTaskUpdated(r.email, r.name, taskTitle, newStatus, updatedByName).catch(() => {});
+      }
+    }
+  }
+
   async createDeadlineReminder(
     eventMemberId: string,
     taskId: string,

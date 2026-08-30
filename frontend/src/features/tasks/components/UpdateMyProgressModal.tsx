@@ -186,11 +186,11 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
             </div>
           </div>
 
-          {/* Optional: Overall Task Status if Manager */}
+          {/* Optional: Overall Task Status */}
           {isManager && (
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                Overall Task Status (Team Lead / Organizer)
+                Overall Task Status
               </label>
               <select
                 value={selectedTaskStatus}

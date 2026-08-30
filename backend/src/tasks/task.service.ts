@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { EventStatus, TaskPriority, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../notifications/notification.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
@@ -18,7 +19,10 @@ import {
 
 @Injectable()
 export class TaskService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) { }
 
   /**
    * Helper: Verify user has permission to modify tasks for a team.
@@ -56,6 +60,7 @@ export class TaskService {
         },
       },
       include: {
+        user: true,
         teamMembership: true,
       },
     });
@@ -116,8 +121,13 @@ export class TaskService {
    */
   async createTask(teamId: string, userId: string, createTaskDto: CreateTaskDto) {
     const { eventMember } = await this.verifyTeamAndPermissions(teamId, userId);
+    const assignerName = eventMember.user
+      ? `${eventMember.user.firstName} ${eventMember.user.lastName}`.trim()
+      : 'Team Lead';
 
-    return this.prisma.$transaction(async (tx) => {
+    const assignedEventMemberIds: string[] = [];
+
+    const result = await this.prisma.$transaction(async (tx) => {
       const task = await tx.task.create({
         data: {
           teamId,
@@ -159,6 +169,7 @@ export class TaskService {
                 assignmentStatus: 'Assigned',
               },
             });
+            assignedEventMemberIds.push(membership.eventMemberId);
           }
         }
       }
@@ -197,6 +208,19 @@ export class TaskService {
         },
       });
     });
+
+    if (result && assignedEventMemberIds.length > 0) {
+      for (const targetMemberId of assignedEventMemberIds) {
+        this.notificationService.createTaskAssignedNotification(
+          targetMemberId,
+          result.taskId,
+          result.taskTitle,
+          assignerName,
+        ).catch(() => {});
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -212,7 +236,25 @@ export class TaskService {
       throw new NotFoundException('Team not found');
     }
 
-    await this.verifyEventReadAccess(team.eventId, userId);
+    const { isOrganizer } = await this.verifyEventReadAccess(team.eventId, userId);
+
+    if (!isOrganizer) {
+      const eventMember = await this.prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: team.eventId,
+            userId,
+          },
+        },
+        include: {
+          teamMembership: true,
+        },
+      });
+
+      if (!eventMember?.teamMembership || eventMember.teamMembership.teamId !== teamId) {
+        throw new ForbiddenException('You can only view tasks for your own team');
+      }
+    }
 
     const searchKeyword = filterDto.search || filterDto.keyword;
 
@@ -290,14 +332,36 @@ export class TaskService {
     eventId: string,
     userId: string,
   ): Promise<EventTaskListItem[]> {
-    await this.verifyEventReadAccess(eventId, userId);
+    const { isOrganizer } = await this.verifyEventReadAccess(eventId, userId);
+
+    const whereClause: any = {
+      team: {
+        eventId,
+      },
+    };
+
+    if (!isOrganizer) {
+      const eventMember = await this.prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId,
+            userId,
+          },
+        },
+        include: {
+          teamMembership: true,
+        },
+      });
+
+      if (!eventMember?.teamMembership?.teamId) {
+        return [];
+      }
+
+      whereClause.teamId = eventMember.teamMembership.teamId;
+    }
 
     const tasks = await this.prisma.task.findMany({
-      where: {
-        team: {
-          eventId,
-        },
-      },
+      where: whereClause,
       include: {
         team: {
           select: {
@@ -365,6 +429,23 @@ export class TaskService {
       include: {
         team: {
           include: {
+            leader: {
+              include: {
+                eventMember: {
+                  include: {
+                    user: {
+                      select: {
+                        userId: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                        profilePhotoUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
             event: {
               select: {
                 eventId: true,
@@ -421,7 +502,25 @@ export class TaskService {
       throw new NotFoundException('Task not found');
     }
 
-    await this.verifyEventReadAccess(task.team.eventId, userId);
+    const { isOrganizer } = await this.verifyEventReadAccess(task.team.eventId, userId);
+
+    if (!isOrganizer) {
+      const eventMember = await this.prisma.eventMember.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: task.team.eventId,
+            userId,
+          },
+        },
+        include: {
+          teamMembership: true,
+        },
+      });
+
+      if (!eventMember?.teamMembership || eventMember.teamMembership.teamId !== task.teamId) {
+        throw new ForbiddenException('You can only view tasks for your own team');
+      }
+    }
 
     const completedAssignmentCount = await this.prisma.taskAssignment.count({
       where: {
@@ -446,6 +545,8 @@ export class TaskService {
         teamName: task.team.teamName,
         description: task.team.description,
         eventId: task.team.eventId,
+        leaderMembershipId: task.team.leaderMembershipId,
+        leader: task.team.leader as any,
       },
       event: {
         eventId: task.team.event.eventId,
@@ -566,22 +667,53 @@ export class TaskService {
       );
     }
 
-    // Verify user is organizer or team leader of this team
+    // Verify user is organizer, team leader, or assigned member of this task
     const isOrganizer = task.team.event.organizerId === userId;
     const isLeader = task.team.leader?.eventMember?.userId === userId;
+    const isAssignee = task.assignments.some(
+      (a) => a.teamMembership?.eventMember?.userId === userId,
+    );
 
-    if (!isOrganizer && !isLeader) {
+    if (!isOrganizer && !isLeader && !isAssignee) {
       throw new ForbiddenException(
-        'Only the event organizer or team leader of this team can change the overall task status',
+        'Only the event organizer, team leader, or assigned member can update the status of this task',
       );
     }
 
-    return this.prisma.task.update({
+    const updatedTask = await this.prisma.task.update({
       where: { taskId },
       data: {
         status: updateStatusDto.status,
       },
     });
+
+    // Notify organizer and team leader when task status is changed
+    let updaterName = 'A team member';
+    if (this.prisma.user?.findUnique) {
+      try {
+        const updaterUser = await this.prisma.user.findUnique({
+          where: { userId },
+          select: { firstName: true, lastName: true },
+        });
+        if (updaterUser) {
+          updaterName = `${updaterUser.firstName} ${updaterUser.lastName}`.trim();
+        }
+      } catch {}
+    }
+
+    if (this.notificationService?.createTaskStatusUpdatedNotification) {
+      this.notificationService.createTaskStatusUpdatedNotification(
+        task.taskId,
+        task.taskTitle,
+        updateStatusDto.status,
+        task.team.eventId,
+        task.teamId,
+        userId,
+        updaterName,
+      ).catch(() => {});
+    }
+
+    return updatedTask;
   }
 
   /**
@@ -630,21 +762,81 @@ export class TaskService {
       whereClause.status = filterDto.status;
     }
 
-    if (filterDto.teamId) {
-      whereClause.teamId = filterDto.teamId;
-    }
-
     if (filterDto.eventId) {
-      whereClause.team = { eventId: filterDto.eventId };
+      const event = await this.prisma.event.findUnique({
+        where: { eventId: filterDto.eventId },
+      });
+
+      if (event && event.organizerId === userId) {
+        whereClause.team = { eventId: filterDto.eventId };
+        if (filterDto.teamId) {
+          whereClause.teamId = filterDto.teamId;
+        }
+      } else {
+        const eventMember = await this.prisma.eventMember.findUnique({
+          where: {
+            eventId_userId: {
+              eventId: filterDto.eventId,
+              userId,
+            },
+          },
+          include: { teamMembership: true },
+        });
+
+        if (!eventMember?.teamMembership?.teamId) {
+          return [];
+        }
+
+        whereClause.teamId = eventMember.teamMembership.teamId;
+      }
+    } else if (filterDto.teamId) {
+      const team = await this.prisma.team.findUnique({
+        where: { teamId: filterDto.teamId },
+        include: { event: true },
+      });
+
+      if (team) {
+        if (team.event.organizerId === userId) {
+          whereClause.teamId = filterDto.teamId;
+        } else {
+          const eventMember = await this.prisma.eventMember.findUnique({
+            where: {
+              eventId_userId: {
+                eventId: team.eventId,
+                userId,
+              },
+            },
+            include: { teamMembership: true },
+          });
+
+          if (!eventMember?.teamMembership || eventMember.teamMembership.teamId !== filterDto.teamId) {
+            return [];
+          }
+          whereClause.teamId = filterDto.teamId;
+        }
+      }
     } else {
-      whereClause.team = {
-        event: {
+      // Find events organized by user and teams user is member of
+      const organizedEvents = await this.prisma.event.findMany({
+        where: { organizerId: userId },
+        select: { eventId: true },
+      });
+      const organizedEventIds = organizedEvents.map((e) => e.eventId);
+
+      const memberships = await this.prisma.teamMembership.findMany({
+        where: { eventMember: { userId } },
+        select: { teamId: true },
+      });
+      const memberTeamIds = memberships.map((m) => m.teamId);
+
+      whereClause.AND = [
+        {
           OR: [
-            { organizerId: userId },
-            { members: { some: { userId } } },
+            ...(organizedEventIds.length > 0 ? [{ team: { eventId: { in: organizedEventIds } } }] : []),
+            ...(memberTeamIds.length > 0 ? [{ teamId: { in: memberTeamIds } }] : []),
           ],
         },
-      };
+      ];
     }
 
     return this.prisma.task.findMany({

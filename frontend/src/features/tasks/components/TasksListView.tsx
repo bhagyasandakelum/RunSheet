@@ -16,9 +16,6 @@ export const TasksListView: React.FC = () => {
   const { user: currentUser } = useAuth();
   const { events, selectedEventId, isOrganizer, userTeamName } = useEvent();
 
-  const isLeader = Boolean(userTeamName?.includes("(Lead)") || userTeamName?.includes("Leader"));
-  const canManageTasks = isOrganizer || isLeader;
-
   const [tasks, setTasks] = useState<Task[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamFilter, setSelectedTeamFilter] = useState<string>("all");
@@ -33,7 +30,13 @@ export const TasksListView: React.FC = () => {
   const [assignModalTask, setAssignModalTask] = useState<Task | null>(null);
   const [deleteModalTask, setDeleteModalTask] = useState<Task | null>(null);
 
-  // Fetch teams for the current event
+  const isLeader = Boolean(
+    userTeamName?.includes("(Lead)") ||
+    userTeamName?.includes("Leader")
+  );
+  const canManageTasks = isOrganizer || isLeader;
+
+  // Fetch teams for the current event (only organizer needs full team list for filtering)
   useEffect(() => {
     if (!selectedEventId) {
       setTeams([]);
@@ -64,7 +67,7 @@ export const TasksListView: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      if (selectedTeamFilter !== "all") {
+      if (isOrganizer && selectedTeamFilter !== "all") {
         const data = await taskService.getTeamTasks(selectedTeamFilter);
         setTasks(data || []);
       } else {
@@ -283,19 +286,28 @@ export const TasksListView: React.FC = () => {
 
         {/* Dropdown Filters */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Team Filter */}
-          <select
-            value={selectedTeamFilter}
-            onChange={(e) => setSelectedTeamFilter(e.target.value)}
-            className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-[#1A2234] text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
-          >
-            <option value="all">All Teams ({teams.length})</option>
-            {teams.map((t) => (
-              <option key={t.teamId} value={t.teamId}>
-                {t.teamName}
-              </option>
-            ))}
-          </select>
+          {/* Team Filter (Organizer only) */}
+          {isOrganizer ? (
+            <select
+              value={selectedTeamFilter}
+              onChange={(e) => setSelectedTeamFilter(e.target.value)}
+              className="h-10 px-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-[#1A2234] text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            >
+              <option value="all">All Teams ({teams.length})</option>
+              {teams.map((t) => (
+                <option key={t.teamId} value={t.teamId}>
+                  {t.teamName}
+                </option>
+              ))}
+            </select>
+          ) : userTeamName ? (
+            <div className="h-10 px-3.5 rounded-xl border border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 shrink-0">
+              <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span>{userTeamName}</span>
+            </div>
+          ) : null}
 
           {/* Status Filter */}
           <select
@@ -397,38 +409,13 @@ export const TasksListView: React.FC = () => {
 
                       {/* Status */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        {canManageTasks ? (
-                          <select
-                            value={t.status}
-                            onChange={async (e) => {
-                              const newStatus = e.target.value as TaskStatus;
-                              try {
-                                await taskService.updateTaskStatus(t.taskId, { status: newStatus });
-                                loadTasks();
-                              } catch (err: any) {
-                                setError(err?.response?.data?.message || err?.message || "Failed to update status.");
-                              }
-                            }}
-                            className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border cursor-pointer focus:outline-none transition-colors ${
-                              statusColors[t.status]?.bg || ""
-                            } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
-                            title="Click to update task status (Organizer / Team Leader)"
-                          >
-                            <option value={TaskStatus.Pending}>Pending</option>
-                            <option value={TaskStatus.InProgress}>In Progress</option>
-                            <option value={TaskStatus.Completed}>Completed</option>
-                            <option value={TaskStatus.OnHold}>On Hold</option>
-                            <option value={TaskStatus.Overdue}>Overdue</option>
-                          </select>
-                        ) : (
-                          <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                              statusColors[t.status]?.bg || ""
-                            } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
-                          >
-                            {t.status}
-                          </span>
-                        )}
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+                            statusColors[t.status]?.bg || ""
+                          } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
+                        >
+                          {t.status}
+                        </span>
                       </td>
 
                       {/* Priority */}
