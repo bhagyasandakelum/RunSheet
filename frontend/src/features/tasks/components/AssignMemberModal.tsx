@@ -102,9 +102,10 @@ export const AssignMemberModal: React.FC<AssignMemberModalProps> = ({
   };
 
   const filteredMembers = teamMembers.filter((m: any) => {
-    const user = m.eventMember?.user || m.user || {};
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
-    const email = (user.email || "").toLowerCase();
+    const firstName = m.firstName || m.user?.firstName || m.eventMember?.user?.firstName || "";
+    const lastName = m.lastName || m.user?.lastName || m.eventMember?.user?.lastName || "";
+    const fullName = `${firstName} ${lastName}`.trim().toLowerCase();
+    const email = (m.email || m.user?.email || m.eventMember?.user?.email || "").toLowerCase();
     const query = searchQuery.toLowerCase().trim();
     return fullName.includes(query) || email.includes(query);
   });
@@ -189,11 +190,12 @@ export const AssignMemberModal: React.FC<AssignMemberModalProps> = ({
             </div>
           ) : (
             filteredMembers.map((m: any) => {
-              const user = m.eventMember?.user || m.user || {};
-              const name = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
-              const email = user.email || "";
-              const avatar = user.profilePhotoUrl || null;
-              const isLeader = leaderMembershipId === m.teamMembershipId;
+              const firstName = m.firstName || m.user?.firstName || m.eventMember?.user?.firstName || "";
+              const lastName = m.lastName || m.user?.lastName || m.eventMember?.user?.lastName || "";
+              const name = `${firstName} ${lastName}`.trim() || m.name || "Member";
+              const email = m.email || m.user?.email || m.eventMember?.user?.email || "";
+              const avatar = m.profilePhotoUrl || m.user?.profilePhotoUrl || m.eventMember?.user?.profilePhotoUrl || null;
+              const isLeader = Boolean(leaderMembershipId === m.teamMembershipId || m.isLeader);
               const isAssigned = assignedMembershipIds.has(m.teamMembershipId);
               const isProcessing = isProcessingId === m.teamMembershipId;
 

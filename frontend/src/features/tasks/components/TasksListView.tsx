@@ -25,6 +25,7 @@ export const TasksListView: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
 
   // Modals state
   const [assignModalTask, setAssignModalTask] = useState<Task | null>(null);
@@ -79,7 +80,7 @@ export const TasksListView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedEventId, selectedTeamFilter]);
+  }, [selectedEventId, selectedTeamFilter, isOrganizer]);
 
   useEffect(() => {
     loadTasks();
@@ -92,8 +93,31 @@ export const TasksListView: React.FC = () => {
     loadTasks();
   };
 
-  // Filter tasks in memory for search, status, and priority
+  const handleQuickStatusUpdate = async (taskId: string, newStatus: TaskStatus) => {
+    try {
+      setUpdatingTaskId(taskId);
+      await taskService.updateTaskStatus(taskId, { status: newStatus });
+      setTasks((prev) =>
+        prev.map((t) => (t.taskId === taskId ? { ...t, status: newStatus } : t))
+      );
+    } catch (err: any) {
+      console.error("Failed to update status:", err);
+    } finally {
+      setUpdatingTaskId(null);
+    }
+  };
+
+  // Filter tasks in memory for search, status, priority, and team ownership
   const filteredTasks = tasks.filter((t) => {
+    // Non-organizers can strictly only see tasks of their own team
+    if (!isOrganizer && userTeamName && userTeamName !== "Event Organizer") {
+      const cleanTeamName = userTeamName.replace(/\s*\(Lead\)$/, "").trim().toLowerCase();
+      const taskTeamName = (t.team?.teamName || (t as any).teamName || "").trim().toLowerCase();
+      if (taskTeamName && cleanTeamName && taskTeamName !== cleanTeamName) {
+        return false;
+      }
+    }
+
     const matchesSearch =
       t.taskTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (t.description || "").toLowerCase().includes(searchQuery.toLowerCase());
@@ -379,6 +403,15 @@ export const TasksListView: React.FC = () => {
                 {filteredTasks.map((t) => {
                   const assignees = t.assignments || [];
                   const teamName = t.team?.teamName || (t as any).teamName || "General";
+                  const isAssignee = assignees.some(
+                    (a: any) =>
+                      (currentUser?.userId && a.userId === currentUser.userId) ||
+                      (currentUser?.email && a.email?.toLowerCase() === currentUser.email.toLowerCase()) ||
+                      (currentUser?.userId && a.teamMembership?.eventMember?.userId === currentUser.userId) ||
+                      (currentUser?.userId && a.teamMembership?.eventMember?.user?.userId === currentUser.userId) ||
+                      (currentUser?.userId && a.user?.userId === currentUser.userId)
+                  );
+                  const canUpdateThisStatus = isOrganizer || isLeader || isAssignee;
 
                   return (
                     <tr
@@ -409,13 +442,42 @@ export const TasksListView: React.FC = () => {
 
                       {/* Status */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                            statusColors[t.status]?.bg || ""
-                          } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
-                        >
-                          {t.status}
-                        </span>
+                        {canUpdateThisStatus ? (
+                          <div className="relative inline-block">
+                            <select
+                              value={t.status}
+                              disabled={updatingTaskId === t.taskId}
+                              onChange={(e) =>
+                                handleQuickStatusUpdate(t.taskId, e.target.value as TaskStatus)
+                              }
+                              className={`cursor-pointer appearance-none pl-2.5 pr-6 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all ${
+                                statusColors[t.status]?.bg || ""
+                              } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
+                              title="Click to update task status"
+                            >
+                              <option value={TaskStatus.Pending}>Pending</option>
+                              <option value={TaskStatus.InProgress}>In Progress</option>
+                              <option value={TaskStatus.Completed}>Completed</option>
+                              <option value={TaskStatus.OnHold}>On Hold</option>
+                            </select>
+                            <svg
+                              className="w-3 h-3 absolute right-1.5 top-2 pointer-events-none opacity-60"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
+                              statusColors[t.status]?.bg || ""
+                            } ${statusColors[t.status]?.text || ""} ${statusColors[t.status]?.border || ""}`}
+                          >
+                            {t.status}
+                          </span>
+                        )}
                       </td>
 
                       {/* Priority */}
@@ -454,16 +516,19 @@ export const TasksListView: React.FC = () => {
                                 a.user ||
                                 a.eventMember?.user ||
                                 {};
+                              const firstName = a.firstName || u.firstName || "";
+                              const lastName = a.lastName || u.lastName || "";
                               const name =
-                                `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
+                                `${firstName} ${lastName}`.trim() ||
+                                a.name ||
                                 "Member";
-                              const avatar = u.profilePhotoUrl || null;
+                              const avatar = a.profilePhotoUrl || u.profilePhotoUrl || null;
 
                               return (
                                 <div
                                   key={a.taskAssignmentId}
                                   title={name}
-                                  className="inline-block h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#131B2E] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center overflow-hidden shrink-0"
+                                  className="inline-block h-7 w-7 rounded-full ring-2 ring-white dark:ring-[#131B2E] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center justify-center overflow-hidden shrink-0 shadow-xs"
                                 >
                                   {avatar ? (
                                     // eslint-disable-next-line @next/next/no-img-element

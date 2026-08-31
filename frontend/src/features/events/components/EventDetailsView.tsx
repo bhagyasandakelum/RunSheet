@@ -220,19 +220,35 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                 </Button>
               </Link>
 
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsInviteOpen(true)}
-                className="bg-white/15 hover:bg-white/25 text-white border-white/20 backdrop-blur-md"
-                leftIcon={
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                }
-              >
-                Invite Members
-              </Button>
+              <div className="relative group/invite">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={activeTeamsCount === 0}
+                  onClick={() => {
+                    if (activeTeamsCount > 0) {
+                      setIsInviteOpen(true);
+                    }
+                  }}
+                  className={`border-white/20 backdrop-blur-md ${
+                    activeTeamsCount === 0
+                      ? "bg-white/10 text-white/40 cursor-not-allowed"
+                      : "bg-white/15 hover:bg-white/25 text-white"
+                  }`}
+                  leftIcon={
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                  }
+                >
+                  Invite Members
+                </Button>
+                {activeTeamsCount === 0 && (
+                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/invite:block px-2.5 py-1 text-[11px] font-semibold text-white bg-slate-900 border border-slate-700 rounded-lg whitespace-nowrap shadow-lg z-30">
+                    Create a team first before inviting members
+                  </span>
+                )}
+              </div>
 
               <Button
                 variant="primary"

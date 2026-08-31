@@ -51,8 +51,8 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
         assignmentStatus: selectedStatus,
       });
 
-      // If manager changed overall task status or assignment completed
-      if (isManager && selectedTaskStatus !== currentTaskStatus) {
+      // Update overall task status (assigned members and leaders can update)
+      if (selectedTaskStatus && selectedTaskStatus !== currentTaskStatus) {
         await taskService.updateTaskStatus(taskId, {
           status: selectedTaskStatus,
         });

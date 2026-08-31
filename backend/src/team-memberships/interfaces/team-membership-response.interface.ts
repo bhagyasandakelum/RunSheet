@@ -7,6 +7,23 @@ export interface TeamMemberListItem {
   profilePhotoUrl: string | null;
   joinedAt: Date;
   isLeader: boolean;
+  eventMember?: {
+    eventMemberId: string;
+    user: {
+      userId?: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      profilePhotoUrl: string | null;
+    };
+  };
+  user?: {
+    userId?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    profilePhotoUrl: string | null;
+  };
 }
 
 export interface TeamMemberUserInfo {

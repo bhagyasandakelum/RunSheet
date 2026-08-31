@@ -177,20 +177,43 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
             Export Members
           </Button>
 
-          <Link href="/invitations/create">
-            <Button
-              variant="primary"
-              size="md"
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
-              leftIcon={
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              }
-            >
-              Invite Member
-            </Button>
-          </Link>
+          <div className="relative group/invite">
+            {teamsList.length > 0 ? (
+              <Link href="/invitations/create">
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                  leftIcon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  }
+                >
+                  Invite Member
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="primary"
+                size="md"
+                disabled
+                className="bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed font-bold"
+                leftIcon={
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                }
+              >
+                Invite Member
+              </Button>
+            )}
+            {teamsList.length === 0 && (
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/invite:block px-2.5 py-1 text-[11px] font-semibold text-white bg-slate-900 border border-slate-700 rounded-lg whitespace-nowrap shadow-lg z-30">
+                Create a team first before inviting members
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

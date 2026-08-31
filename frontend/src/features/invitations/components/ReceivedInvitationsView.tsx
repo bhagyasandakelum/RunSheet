@@ -45,16 +45,25 @@ export const ReceivedInvitationsView: React.FC = () => {
 
       await invitationService.acceptInvitation(invitation.invitationId);
 
+      // Optimistically update local invitation status so it immediately moves to Accepted
+      setInvitations((prev) =>
+        prev.map((i) =>
+          i.invitationId === invitation.invitationId
+            ? { ...i, status: "Accepted" as any, acceptedAt: new Date().toISOString() }
+            : i
+        )
+      );
+
       // Refresh events so newly joined event appears in context
       await refreshEvents();
       setSelectedEventId(invitation.eventId);
 
-      setSuccessMessage(`Successfully joined "${invitation.eventName || "the event"}"!`);
+      setSuccessMessage(`Successfully joined "${invitation.eventName || "the event"}"! You have been assigned to your team and can access all event operations.`);
       await loadInvitations();
 
       setTimeout(() => {
         setSuccessMessage(null);
-      }, 4000);
+      }, 5000);
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to accept invitation.");
     } finally {

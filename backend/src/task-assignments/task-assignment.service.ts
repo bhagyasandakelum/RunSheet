@@ -248,6 +248,7 @@ export class TaskAssignmentService {
               include: {
                 user: {
                   select: {
+                    userId: true,
                     firstName: true,
                     lastName: true,
                     email: true,
@@ -263,10 +264,19 @@ export class TaskAssignmentService {
 
     const items: TaskAssigneeItem[] = assignments.map((a) => {
       const isLeader = task.team.leaderMembershipId === a.teamMembershipId;
+      const userObj = {
+        userId: a.teamMembership.eventMember.user.userId,
+        firstName: a.teamMembership.eventMember.user.firstName,
+        lastName: a.teamMembership.eventMember.user.lastName,
+        email: a.teamMembership.eventMember.user.email,
+        profilePhotoUrl: a.teamMembership.eventMember.user.profilePhotoUrl,
+      };
+
       return {
         taskAssignmentId: a.taskAssignmentId,
         teamMembershipId: a.teamMembershipId,
         eventMemberId: a.teamMembership.eventMemberId,
+        userId: a.teamMembership.eventMember.user.userId,
         assignmentStatus: a.assignmentStatus,
         assignedAt: a.assignedAt,
         completedAt: a.completedAt,
@@ -275,6 +285,16 @@ export class TaskAssignmentService {
         email: a.teamMembership.eventMember.user.email,
         profilePhotoUrl: a.teamMembership.eventMember.user.profilePhotoUrl,
         isLeader,
+        user: userObj,
+        teamMembership: {
+          teamMembershipId: a.teamMembershipId,
+          eventMemberId: a.teamMembership.eventMemberId,
+          eventMember: {
+            eventMemberId: a.teamMembership.eventMemberId,
+            userId: a.teamMembership.eventMember.user.userId,
+            user: userObj,
+          },
+        },
       };
     });
 

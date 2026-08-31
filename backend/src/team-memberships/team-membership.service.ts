@@ -261,6 +261,7 @@ export class TeamMembershipService {
           include: {
             user: {
               select: {
+                userId: true,
                 firstName: true,
                 lastName: true,
                 email: true,
@@ -274,6 +275,14 @@ export class TeamMembershipService {
 
     const members: TeamMemberListItem[] = memberships.map((m) => {
       const isLeader = team.leaderMembershipId === m.teamMembershipId;
+      const userObj = {
+        userId: m.eventMember.user.userId,
+        firstName: m.eventMember.user.firstName,
+        lastName: m.eventMember.user.lastName,
+        email: m.eventMember.user.email,
+        profilePhotoUrl: m.eventMember.user.profilePhotoUrl,
+      };
+
       return {
         teamMembershipId: m.teamMembershipId,
         eventMemberId: m.eventMemberId,
@@ -283,6 +292,11 @@ export class TeamMembershipService {
         profilePhotoUrl: m.eventMember.user.profilePhotoUrl,
         joinedAt: m.joinedAt,
         isLeader,
+        user: userObj,
+        eventMember: {
+          eventMemberId: m.eventMemberId,
+          user: userObj,
+        },
       };
     });
 

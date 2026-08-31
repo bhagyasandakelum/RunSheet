@@ -4,6 +4,7 @@ export interface TaskAssigneeItem {
   taskAssignmentId: string;
   teamMembershipId: string;
   eventMemberId: string;
+  userId: string;
   assignmentStatus: AssignmentStatus;
   assignedAt: Date;
   completedAt: Date | null;
@@ -12,6 +13,16 @@ export interface TaskAssigneeItem {
   email: string;
   profilePhotoUrl: string | null;
   isLeader: boolean;
+  user?: UserSummary;
+  teamMembership?: {
+    teamMembershipId: string;
+    eventMemberId: string;
+    eventMember?: {
+      eventMemberId: string;
+      userId: string;
+      user?: UserSummary;
+    };
+  };
 }
 
 export interface UserSummary {

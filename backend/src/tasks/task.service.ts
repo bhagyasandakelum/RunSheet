@@ -575,13 +575,54 @@ export class TaskService {
   async updateTask(taskId: string, userId: string, updateTaskDto: UpdateTaskDto) {
     const task = await this.prisma.task.findUnique({
       where: { taskId },
+      include: {
+        team: {
+          include: {
+            event: true,
+            leader: {
+              include: {
+                eventMember: true,
+              },
+            },
+          },
+        },
+        assignments: {
+          include: {
+            teamMembership: {
+              include: {
+                eventMember: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    await this.verifyTeamAndPermissions(task.teamId, userId);
+    if (
+      task.team.event.status === EventStatus.Completed ||
+      task.team.event.status === EventStatus.Archived ||
+      task.team.event.status === EventStatus.Cancelled
+    ) {
+      throw new BadRequestException(
+        'Cannot modify tasks in a completed, archived, or cancelled event',
+      );
+    }
+
+    const isOrganizer = task.team.event.organizerId === userId;
+    const isLeader = task.team.leader?.eventMember?.userId === userId;
+    const isAssignee = task.assignments.some(
+      (a) => a.teamMembership?.eventMember?.userId === userId,
+    );
+
+    if (!isOrganizer && !isLeader && !isAssignee) {
+      throw new ForbiddenException(
+        'Only the event organizer, team leader, or assigned team member can update this task',
+      );
+    }
 
     return this.prisma.task.update({
       where: { taskId },

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { invitationService } from "@/services/invitation-service";
 import { eventService } from "@/services/event-service";
+import { teamService } from "@/services/team-service";
 import { Event } from "@/types/common/entities";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +22,8 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
 
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>(initialEventId || "");
+  const [teams, setTeams] = useState<any[]>([]);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
 
@@ -47,6 +50,25 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  useEffect(() => {
+    if (!selectedEventId) {
+      setTeams([]);
+      return;
+    }
+    const loadTeams = async () => {
+      try {
+        setIsLoadingTeams(true);
+        const list = await teamService.getTeamsByEvent(selectedEventId);
+        setTeams(list || []);
+      } catch {
+        setTeams([]);
+      } finally {
+        setIsLoadingTeams(false);
+      }
+    };
+    loadTeams();
+  }, [selectedEventId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,6 +203,21 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
               </div>
             </div>
 
+            {/* No teams warning banner */}
+            {!isLoadingTeams && teams.length === 0 && selectedEventId && (
+              <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-semibold flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-base shrink-0">⚠️</span>
+                  <span>This event has no teams created yet. You must create at least one team before inviting members.</span>
+                </div>
+                <Link href={`/teams/create?eventId=${selectedEventId}`} className="shrink-0">
+                  <Button type="button" size="sm" variant="primary" className="bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px]">
+                    + Create Team
+                  </Button>
+                </Link>
+              </div>
+            )}
+
             {/* Personal Message */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
@@ -194,7 +231,7 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Add a custom welcome note to the invitation email..."
                 rows={3}
-                disabled={isSending}
+                disabled={isSending || teams.length === 0}
               />
             </div>
 
@@ -210,7 +247,8 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
                 variant="primary"
                 size="md"
                 isLoading={isSending}
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                disabled={teams.length === 0 || isLoadingTeams}
+                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold disabled:bg-slate-300 dark:disabled:bg-slate-750 disabled:text-slate-500"
               >
                 Send Invitation
               </Button>

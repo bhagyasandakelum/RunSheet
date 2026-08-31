@@ -41,6 +41,16 @@ export class InvitationService {
       throw new ForbiddenException('Only the event organizer can invite users');
     }
 
+    const teamCount = await this.prisma.team.count({
+      where: { eventId },
+    });
+
+    if (teamCount === 0) {
+      throw new BadRequestException(
+        'Please create at least one team before inviting members to this event.',
+      );
+    }
+
     const invitedUser = await this.prisma.user.findUnique({
       where: { email: createDto.email },
     });
@@ -275,6 +285,28 @@ export class InvitationService {
             userId: currentUserId,
           },
         });
+      }
+
+      // Check if user already has a team membership for this event
+      const existingTeamMembership = await tx.teamMembership.findUnique({
+        where: { eventMemberId: member.eventMemberId },
+      });
+
+      if (!existingTeamMembership) {
+        const eventTeams = await tx.team.findMany({
+          where: { eventId: invitation.eventId },
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+        });
+
+        if (eventTeams.length > 0) {
+          await tx.teamMembership.create({
+            data: {
+              teamId: eventTeams[0].teamId,
+              eventMemberId: member.eventMemberId,
+            },
+          });
+        }
       }
 
       const notifExpiresAt = new Date();

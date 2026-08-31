@@ -103,14 +103,15 @@ export const ManageTeamMembersModal: React.FC<ManageTeamMembersModalProps> = ({
   };
 
   const filteredMembers = members.filter((m: any) => {
-    const user = m.eventMember?.user || m.user || {};
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.toLowerCase();
-    const email = (user.email || "").toLowerCase();
+    const firstName = m.firstName || m.user?.firstName || m.eventMember?.user?.firstName || "";
+    const lastName = m.lastName || m.user?.lastName || m.eventMember?.user?.lastName || "";
+    const fullName = `${firstName} ${lastName}`.trim().toLowerCase();
+    const email = (m.email || m.user?.email || m.eventMember?.user?.email || "").toLowerCase();
     const query = searchQuery.toLowerCase().trim();
     return fullName.includes(query) || email.includes(query);
   });
 
-  const memberUserIds = members.map((m: any) => m.eventMember?.userId || m.userId).filter(Boolean);
+  const memberUserIds = members.map((m: any) => m.eventMember?.userId || m.userId || m.eventMember?.user?.userId || m.user?.userId).filter(Boolean);
 
   const leaderObj = currentTeam.leader as any;
   const leaderUser = leaderObj?.eventMember?.user || leaderObj?.user;

@@ -366,11 +366,13 @@ export const TeamDetailsView: React.FC<TeamDetailsViewProps> = ({ teamId }) => {
                 </div>
               ) : (
                 members.map((m: any) => {
-                  const u = m.eventMember?.user || m.user || {};
+                  const firstName = m.firstName || m.user?.firstName || m.eventMember?.user?.firstName || "";
+                  const lastName = m.lastName || m.user?.lastName || m.eventMember?.user?.lastName || "";
+                  const name = `${firstName} ${lastName}`.trim() || m.name || "Member";
+                  const email = m.email || m.user?.email || m.eventMember?.user?.email || "";
+                  const avatar = m.profilePhotoUrl || m.user?.profilePhotoUrl || m.eventMember?.user?.profilePhotoUrl || null;
                   const isLeader =
                     team.leaderMembershipId === m.teamMembershipId || m.isLeader;
-                  const name = `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Member";
-                  const avatar = u.profilePhotoUrl || null;
 
                   return (
                     <div key={m.teamMembershipId} className="py-2.5 flex items-center justify-between gap-3">
@@ -392,7 +394,7 @@ export const TeamDetailsView: React.FC<TeamDetailsViewProps> = ({ teamId }) => {
                           <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                             {name}
                           </p>
-                          <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
+                          <p className="text-[10px] text-slate-400 truncate">{email}</p>
                         </div>
                       </div>
 

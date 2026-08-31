@@ -99,12 +99,16 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
   // Check if current user is an assignee
   const myAssignment = assignments.find(
     (a: any) =>
-      a.teamMembership?.eventMember?.userId === currentUser?.userId ||
-      a.teamMembership?.eventMember?.user?.userId === currentUser?.userId ||
-      a.eventMemberId === (currentUser as any)?.eventMemberId ||
-      a.userId === currentUser?.userId
+      (currentUser?.userId && a.userId === currentUser.userId) ||
+      (currentUser?.email && a.email?.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (currentUser?.userId && a.teamMembership?.eventMember?.userId === currentUser.userId) ||
+      (currentUser?.userId && a.teamMembership?.eventMember?.user?.userId === currentUser.userId) ||
+      (currentUser?.userId && a.user?.userId === currentUser.userId) ||
+      ((currentUser as any)?.eventMemberId && a.eventMemberId === (currentUser as any).eventMemberId) ||
+      ((currentUser as any)?.teamMembershipId && a.teamMembershipId === (currentUser as any).teamMembershipId)
   );
   const isAssignee = Boolean(myAssignment);
+  const canEdit = isOrganizer || isLeader || isAssignee;
   const canUpdateStatus = isOrganizer || isLeader || isAssignee;
 
   const handleDeleteTask = async () => {
@@ -259,14 +263,14 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
             </span>
             <span>•</span>
             <span>
-              Created by {(task.createdBy as any)?.user?.firstName || (task.createdBy as any)?.firstName || "Member"} {(task.createdBy as any)?.user?.lastName || (task.createdBy as any)?.lastName || ""}
+              Created by {((task.createdBy as any)?.user?.firstName || (task.createdBy as any)?.firstName || "Member") + " " + ((task.createdBy as any)?.user?.lastName || (task.createdBy as any)?.lastName || "")}
             </span>
           </div>
         </div>
 
-        {/* Top Action Buttons (Managers only: Assign, Edit, Delete) */}
-        {canManage && (
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        {/* Top Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          {canManage && (
             <Button
               variant="outline"
               size="md"
@@ -280,13 +284,17 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
             >
               Assign Members
             </Button>
+          )}
 
+          {canEdit && (
             <Link href={`/tasks/${taskId}/edit`}>
               <Button variant="outline" size="md" className="text-xs font-semibold">
                 Edit Task
               </Button>
             </Link>
+          )}
 
+          {canManage && (
             <Button
               variant="outline"
               size="md"
@@ -295,8 +303,8 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
             >
               Delete
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Progress & Stats Row */}

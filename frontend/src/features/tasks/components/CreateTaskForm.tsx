@@ -352,9 +352,12 @@ export const CreateTaskForm: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
                   {teamMembers.map((m: any) => {
-                    const user = m.eventMember?.user || m.user || {};
-                    const name = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
-                    const isLeader = selectedTeam?.leaderMembershipId === m.teamMembershipId;
+                    const firstName = m.firstName || m.user?.firstName || m.eventMember?.user?.firstName || "";
+                    const lastName = m.lastName || m.user?.lastName || m.eventMember?.user?.lastName || "";
+                    const name = `${firstName} ${lastName}`.trim() || m.name || "Member";
+                    const email = m.email || m.user?.email || m.eventMember?.user?.email || "";
+                    const avatar = m.profilePhotoUrl || m.user?.profilePhotoUrl || m.eventMember?.user?.profilePhotoUrl || null;
+                    const isLeader = Boolean(m.isLeader || selectedTeam?.leaderMembershipId === m.teamMembershipId);
                     const isChecked = selectedAssigneeIds.includes(m.teamMembershipId);
 
                     return (
@@ -368,20 +371,25 @@ export const CreateTaskForm: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-500/30 flex items-center justify-center text-[10px] font-bold text-emerald-700 dark:text-emerald-300 shrink-0">
-                            {name
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")
-                              .slice(0, 2)
-                              .toUpperCase()}
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-500/30 flex items-center justify-center text-xs font-bold text-emerald-700 dark:text-emerald-300 overflow-hidden shrink-0">
+                            {avatar ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                            ) : (
+                              name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")
+                                .slice(0, 2)
+                                .toUpperCase()
+                            )}
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                               {name}
                             </p>
                             <p className="text-[10px] text-slate-400 truncate">
-                              {isLeader ? "Team Leader" : "Member"}
+                              {isLeader ? "Team Leader" : email || "Member"}
                             </p>
                           </div>
                         </div>
@@ -403,10 +411,10 @@ export const CreateTaskForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Actions */}
+          {/* Submit Actions */}
           <div className="flex items-center justify-end gap-3 pt-2">
             <Link href="/tasks">
-              <Button variant="outline" size="md" className="text-xs font-semibold">
+              <Button type="button" variant="secondary" size="md" disabled={isSubmitting}>
                 Cancel
               </Button>
             </Link>
@@ -415,8 +423,7 @@ export const CreateTaskForm: React.FC = () => {
               variant="primary"
               size="md"
               isLoading={isSubmitting}
-              disabled={!taskTitle.trim() || !selectedTeamId}
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold px-6 text-xs"
+              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
             >
               Create Task
             </Button>
@@ -477,15 +484,22 @@ export const CreateTaskForm: React.FC = () => {
                 ) : (
                   selectedAssigneeIds.map((id) => {
                     const m: any = teamMembers.find((member: any) => member.teamMembershipId === id);
-                    const user = m?.eventMember?.user || m?.user || {};
-                    const name = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Member";
+                    const firstName = m?.firstName || m?.user?.firstName || m?.eventMember?.user?.firstName || "";
+                    const lastName = m?.lastName || m?.user?.lastName || m?.eventMember?.user?.lastName || "";
+                    const name = `${firstName} ${lastName}`.trim() || m?.name || "Member";
+                    const avatar = m?.profilePhotoUrl || m?.user?.profilePhotoUrl || m?.eventMember?.user?.profilePhotoUrl || null;
                     return (
                       <div
                         key={id}
                         title={name}
-                        className="inline-block h-7 w-7 rounded-full ring-2 ring-[#111622] bg-emerald-700 text-white text-[10px] font-bold flex items-center justify-center"
+                        className="inline-block h-7 w-7 rounded-full ring-2 ring-[#111622] bg-emerald-700 text-white text-[10px] font-bold flex items-center justify-center overflow-hidden"
                       >
-                        {name[0]?.toUpperCase() || "M"}
+                        {avatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                        ) : (
+                          name[0]?.toUpperCase() || "M"
+                        )}
                       </div>
                     );
                   })

@@ -32,8 +32,9 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   const leaderUser = leaderObj?.eventMember?.user || leaderObj?.user;
   const leaderName =
     team.leaderName ||
-    (leaderUser ? `${leaderUser.firstName} ${leaderUser.lastName}` : null);
-  const leaderAvatar = leaderUser?.profilePhotoUrl || null;
+    (leaderUser?.firstName ? `${leaderUser.firstName} ${leaderUser.lastName || ""}`.trim() : null) ||
+    (leaderObj?.firstName ? `${leaderObj.firstName} ${leaderObj.lastName || ""}`.trim() : null);
+  const leaderAvatar = leaderUser?.profilePhotoUrl || leaderObj?.profilePhotoUrl || null;
 
   const memberCount = team.memberCount ?? team.members?.length ?? 0;
   const taskCount = team.taskCount ?? team.tasks?.length ?? 0;

@@ -48,21 +48,22 @@ export const MyTeamCard: React.FC<MyTeamCardProps> = ({ team }) => {
       {/* Overlapping Avatar Stack */}
       <div className="flex items-center -space-x-2 mt-4">
         {members.slice(0, 3).map((member, idx) => {
+          const memberName = member.name || `${member.firstName || ""} ${member.lastName || ""}`.trim() || "Member";
           return (
             <div
               key={member.userId || idx}
-              className="relative inline-block w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 overflow-hidden bg-emerald-700 text-white flex items-center justify-center text-xs font-bold shrink-0"
-              title={member.name || `${member.firstName} ${member.lastName}`}
+              className="relative inline-block w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 overflow-hidden bg-emerald-700 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs"
+              title={memberName}
             >
               {member.profilePhotoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={member.profilePhotoUrl}
-                  alt={member.name || "Member"}
+                  alt={memberName}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span>{getInitials(member.name || `${member.firstName} ${member.lastName}`)}</span>
+                <span>{getInitials(memberName)}</span>
               )}
             </div>
           );
@@ -70,7 +71,7 @@ export const MyTeamCard: React.FC<MyTeamCardProps> = ({ team }) => {
 
         {/* Overflow Badge */}
         {overflowCount > 0 && (
-          <div className="relative inline-flex items-center justify-center w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 bg-slate-200/90 dark:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-200">
+          <div className="relative inline-flex items-center justify-center w-9 h-9 rounded-full ring-2 ring-white dark:ring-slate-900 bg-slate-200/90 dark:bg-slate-700 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-xs">
             +{overflowCount}
           </div>
         )}
