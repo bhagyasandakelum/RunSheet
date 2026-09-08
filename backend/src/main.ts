@@ -13,10 +13,34 @@ try {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Allowed CORS Origins
+  const allowedOrigins = [
+    'https://run-sheet-eight.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://localhost:5173',
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map((url) => url.trim()) : []),
+    ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((url) => url.trim()) : []),
+  ];
+
   // Enable CORS for frontend integration
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        /^https:\/\/.*\.vercel\.app$/.test(origin);
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy blocked access from origin: ${origin}`));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
     credentials: true,
   });
 
