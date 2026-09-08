@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { EventProvider } from "@/providers/event-provider";
 import { ToastProvider } from "@/providers/toast-provider";
@@ -30,22 +31,46 @@ export const viewport: Viewport = {
   ],
 };
 
+const themeScript = `
+  (function() {
+    try {
+      var stored = localStorage.getItem('runsheet-theme');
+      var isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        document.documentElement.style.colorScheme = 'dark';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.documentElement.style.colorScheme = 'light';
+      }
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} h-full antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
-        <AuthProvider>
-          <EventProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </EventProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <EventProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </EventProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, :where(.dark *)));
+
 @layer base {
   :root {
+    color-scheme: light;
     --font-poppins: 'Poppins', sans-serif;
     
     /* Primary Brand Colors */
@@ -37,6 +40,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     /* Dark Mode Tokens */
     --background: #0B0F19;
     --foreground: #F8FAFC;
@@ -53,6 +57,27 @@
     --warning-light: rgba(245, 158, 11, 0.2);
     --error-light: rgba(239, 68, 68, 0.2);
     --info-light: rgba(59, 130, 246, 0.2);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+      color-scheme: dark;
+      --background: #0B0F19;
+      --foreground: #F8FAFC;
+      --card: #131B2E;
+      --card-foreground: #F8FAFC;
+      --popover: #131B2E;
+      --popover-foreground: #F8FAFC;
+      --muted: #1E293B;
+      --muted-foreground: #94A3B8;
+      --border: #1E293B;
+      --input: #1E293B;
+
+      --success-light: rgba(16, 185, 129, 0.2);
+      --warning-light: rgba(245, 158, 11, 0.2);
+      --error-light: rgba(239, 68, 68, 0.2);
+      --info-light: rgba(59, 130, 246, 0.2);
+    }
   }
 }
 

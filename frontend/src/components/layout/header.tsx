@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useEvent } from "@/providers/event-provider";
+import { useTheme } from "@/providers/theme-provider";
 import { UserMenu } from "./user-menu";
 
 export interface HeaderProps {
@@ -22,8 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectEvent: propSelectEvent,
 }) => {
   const { events, selectedEvent, setSelectedEventId } = useEvent();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
-  const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
 
@@ -44,16 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const toggleTheme = () => {
-    const root = document.documentElement;
-    if (root.classList.contains("dark")) {
-      root.classList.remove("dark");
-      setIsDark(false);
-    } else {
-      root.classList.add("dark");
-      setIsDark(true);
-    }
-  };
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -182,9 +174,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
-          title="Toggle theme"
+          title={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+          aria-label="Toggle theme"
         >
-          {isDark ? (
+          {resolvedTheme === "dark" ? (
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
