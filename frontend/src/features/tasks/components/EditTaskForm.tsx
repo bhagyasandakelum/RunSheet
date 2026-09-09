@@ -254,7 +254,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({ taskId }) => {
             size="md"
             isLoading={isSubmitting}
             disabled={!taskTitle.trim()}
-            className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold px-6 text-xs"
+            className="bg-[#44D944] text-slate-950 font-bold px-6 text-xs hover:brightness-105 shadow-xs"
           >
             Save Changes
           </Button>

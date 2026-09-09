@@ -357,7 +357,7 @@ export const EditProfileForm: React.FC = () => {
               variant="primary"
               size="md"
               isLoading={isSaving}
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm shadow-emerald-500/20"
+              className="bg-[#44D944] text-slate-950 font-bold text-xs shadow-xs hover:brightness-105"
             >
               Save Changes
             </Button>

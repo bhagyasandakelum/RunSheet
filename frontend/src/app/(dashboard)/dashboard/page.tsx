@@ -175,7 +175,7 @@ export default function DashboardPage() {
                       variant="primary"
                       isLoading={isAcceptingInviteId === inv.invitationId}
                       onClick={() => handleQuickAccept(inv)}
-                      className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                      className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
                     >
                       Accept & Join
                     </Button>
@@ -191,8 +191,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="p-8 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xs space-y-5">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+        <div className="p-8 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-xs space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-[#44D944]/10 border border-[#44D944]/20 text-[#44D944] flex items-center justify-center mx-auto">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -210,7 +210,7 @@ export default function DashboardPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs px-6"
+                className="bg-[#44D944] text-slate-950 font-bold text-xs px-6 hover:brightness-105 shadow-xs"
               >
                 + Create New Event
               </Button>
@@ -307,7 +307,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode("organizer")}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === "organizer"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -321,7 +321,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode("member")}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === "member"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -343,7 +343,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <Link href="/invitations">
-            <Button size="sm" variant="primary" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs">
+            <Button size="sm" variant="primary" className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs">
               Review & Accept →
             </Button>
           </Link>

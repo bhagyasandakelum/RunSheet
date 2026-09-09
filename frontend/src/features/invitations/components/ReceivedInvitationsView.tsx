@@ -121,7 +121,7 @@ export const ReceivedInvitationsView: React.FC = () => {
             size="sm"
             variant="primary"
             onClick={() => router.push("/dashboard")}
-            className="bg-[#28c740] hover:bg-[#23b33a] text-white text-[11px] font-bold"
+            className="bg-[#44D944] text-slate-950 text-[11px] font-bold hover:brightness-105 shadow-xs"
           >
             Go to Event Dashboard →
           </Button>
@@ -338,7 +338,7 @@ export const ReceivedInvitationsView: React.FC = () => {
                         size="sm"
                         isLoading={isActionLoading}
                         onClick={() => handleAccept(inv)}
-                        className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                        className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
                       >
                         Accept Invitation
                       </Button>
@@ -354,7 +354,7 @@ export const ReceivedInvitationsView: React.FC = () => {
                         setSelectedEventId(inv.eventId);
                         router.push("/dashboard");
                       }}
-                      className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                      className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
                     >
                       View in Dashboard →
                     </Button>

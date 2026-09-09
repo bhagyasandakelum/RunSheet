@@ -158,28 +158,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* 1. Top Hero Header Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-xl select-none">
-        {/* Banner Graphic Background with Architectural Lines & Grid */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-950 z-0">
-          <svg className="w-full h-full opacity-15 object-cover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" preserveAspectRatio="none">
-            <line x1="0" y1="50" x2="1000" y2="50" stroke="#38bdf8" strokeWidth="1" />
-            <line x1="0" y1="150" x2="1000" y2="150" stroke="#38bdf8" strokeWidth="1" />
-            <line x1="0" y1="250" x2="1000" y2="250" stroke="#38bdf8" strokeWidth="1" />
-            <line x1="200" y1="0" x2="200" y2="300" stroke="#38bdf8" strokeWidth="1" />
-            <line x1="500" y1="0" x2="500" y2="300" stroke="#38bdf8" strokeWidth="1" />
-            <line x1="800" y1="0" x2="800" y2="300" stroke="#38bdf8" strokeWidth="1" />
-            {/* Perspective Building Wireframe */}
-            <polygon points="700,20 950,50 950,280 700,260" fill="none" stroke="#60a5fa" strokeWidth="2" />
-            <polygon points="720,40 930,70 930,260 720,240" fill="none" stroke="#60a5fa" strokeWidth="1" />
-            <text x="750" y="140" fill="#94a3b8" fontSize="18" fontFamily="sans-serif" fontWeight="bold" letterSpacing="4">
-              {eventData.venue.toUpperCase()}
-            </text>
-            <text x="750" y="170" fill="#38bdf8" fontSize="24" fontFamily="sans-serif" fontWeight="900" letterSpacing="2">
-              {eventData.eventName.toUpperCase()}
-            </text>
-          </svg>
-        </div>
-
+      <div className="relative rounded-2xl overflow-hidden bg-slate-900 dark:bg-slate-950 border border-slate-800 shadow-md select-none">
         {/* Banner Content */}
         <div className="relative z-10 p-6 sm:p-8 space-y-6">
           {/* Top Bar: Meta pills & Action Buttons */}
@@ -188,16 +167,17 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
             <div className="flex flex-wrap items-center gap-2.5">
               {getStatusBadge(eventData.status)}
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold backdrop-blur-md border border-white/15">
-                <svg className="w-3.5 h-3.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/80">
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span>{formattedDates}</span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-semibold backdrop-blur-md border border-white/15">
-                <svg className="w-3.5 h-3.5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/90 text-slate-200 text-xs font-semibold border border-slate-700/80">
+                <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>{eventData.venue}</span>
               </div>
@@ -209,7 +189,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="bg-white/15 hover:bg-white/25 text-white border-white/20 backdrop-blur-md"
+                  className="bg-slate-800 hover:bg-slate-700 text-white border-slate-700"
                   leftIcon={
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -230,10 +210,10 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                       setIsInviteOpen(true);
                     }
                   }}
-                  className={`border-white/20 backdrop-blur-md ${
+                  className={`border-slate-700 ${
                     activeTeamsCount === 0
-                      ? "bg-white/10 text-white/40 cursor-not-allowed"
-                      : "bg-white/15 hover:bg-white/25 text-white"
+                      ? "bg-slate-800/40 text-slate-500 cursor-not-allowed"
+                      : "bg-slate-800 hover:bg-slate-700 text-white"
                   }`}
                   leftIcon={
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,7 +234,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                 variant="primary"
                 size="sm"
                 onClick={() => setIsCreateTeamOpen(true)}
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                className="bg-[#44D944] text-slate-950 font-bold hover:brightness-105 shadow-xs"
                 leftIcon={
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -268,12 +248,12 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
 
           {/* Event Title & Subtitle */}
           <div className="max-w-3xl space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {eventData.eventName}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-300 font-normal leading-relaxed">
               {eventData.description ||
-                "Global convention for artificial intelligence researchers, engineers, and enterprise leaders. High-priority operations must be monitored in real-time."}
+                "Live operational event dashboard. Monitor task progress, team execution, and critical items in real-time."}
             </p>
           </div>
         </div>
@@ -332,17 +312,17 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
           </div>
         </div>
 
-        {/* Card 4: COMPLETION (Vibrant Green Banner Card) */}
-        <div className="p-5 rounded-2xl bg-gradient-to-tr from-[#23b33a] to-[#34d399] text-white shadow-md flex items-center justify-between transition-all hover:shadow-lg">
+        {/* Card 4: COMPLETION */}
+        <div className="p-5 rounded-2xl bg-[#44D944] text-slate-950 shadow-xs flex items-center justify-between transition-all hover:brightness-105">
           <div className="space-y-1">
-            <span className="text-[11px] font-black uppercase tracking-wider text-emerald-100">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-900/80">
               Completion
             </span>
-            <div className="text-2xl sm:text-3xl font-black text-white">
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-950">
               {completionPercentage}%
             </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-950/10 border border-slate-950/20 text-slate-950 flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
@@ -383,7 +363,7 @@ export const EventDetailsView: React.FC<EventDetailsViewProps> = ({ eventId }) =
                   cy="50"
                   r="40"
                   fill="transparent"
-                  stroke="#28c740"
+                  stroke="#44D944"
                   strokeWidth="10"
                   strokeDasharray={`${2 * Math.PI * 40}`}
                   strokeDashoffset={`${2 * Math.PI * 40 * (1 - completionPercentage / 100)}`}

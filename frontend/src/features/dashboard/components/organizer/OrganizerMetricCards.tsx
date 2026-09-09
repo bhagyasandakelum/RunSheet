@@ -65,8 +65,8 @@ export const OrganizerMetricCards: React.FC<{
       </div>
 
       {/* 4. Completed */}
-      <div className="p-4 rounded-2xl bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25 flex flex-col justify-between transition-all hover:brightness-105">
-        <div className="flex items-center justify-between font-bold text-xs opacity-95">
+      <div className="p-4 rounded-2xl bg-[#44D944] text-slate-950 shadow-xs flex flex-col justify-between transition-all hover:brightness-105">
+        <div className="flex items-center justify-between font-bold text-xs">
           <span>Completed</span>
           <div className="w-4 h-4 rounded-full border border-slate-950 flex items-center justify-center">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,7 +78,7 @@ export const OrganizerMetricCards: React.FC<{
           <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             {metrics.completedTasks}
           </span>
-          <span className="text-[11px] font-bold opacity-85">
+          <span className="text-[11px] font-bold opacity-90">
             {Math.round(metrics.completionPercentage)}%
           </span>
         </div>

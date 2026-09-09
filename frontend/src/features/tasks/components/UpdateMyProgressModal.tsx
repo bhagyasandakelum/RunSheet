@@ -222,7 +222,7 @@ export const UpdateMyProgressModal: React.FC<UpdateMyProgressModalProps> = ({
               variant="primary"
               size="md"
               isLoading={isSubmitting}
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+              className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
             >
               Save Progress
             </Button>

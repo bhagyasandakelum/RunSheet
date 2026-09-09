@@ -255,7 +255,7 @@ export const AssignMemberModal: React.FC<AssignMemberModalProps> = ({
                         onClick={() => handleAssign(m.teamMembershipId)}
                         disabled={currentAssignments.length >= 3}
                         isLoading={isProcessing}
-                        className="bg-[#28c740] hover:bg-[#23b33a] text-white text-xs font-bold"
+                        className="bg-[#44D944] text-slate-950 text-xs font-bold hover:brightness-105 shadow-xs"
                       >
                         + Assign
                       </Button>

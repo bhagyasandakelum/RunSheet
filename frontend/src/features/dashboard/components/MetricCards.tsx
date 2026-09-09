@@ -104,12 +104,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
       </div>
 
       {/* 4. OVERDUE */}
-      <div className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-[#fee2e2]/70 dark:bg-red-950/30 p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between">
+      <div className="rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 p-5 shadow-xs transition-all hover:shadow-md flex flex-col justify-between">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold tracking-wider text-red-700 dark:text-red-400 uppercase">
+          <span className="text-[11px] font-bold tracking-wider text-rose-700 dark:text-rose-400 uppercase">
             Overdue
           </span>
-          <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/60 flex items-center justify-center text-red-600 dark:text-red-400">
+          <div className="w-8 h-8 rounded-lg bg-rose-100/80 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 dark:text-rose-400">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -117,12 +117,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
         </div>
 
         <div className="mt-4 mb-2">
-          <span className="text-3xl font-extrabold text-red-900 dark:text-red-100 tracking-tight">
+          <span className="text-3xl font-extrabold text-rose-700 dark:text-rose-400 tracking-tight">
             {data.overdue}
           </span>
         </div>
 
-        <div className="text-[11px] font-medium text-red-700 dark:text-red-400">
+        <div className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
           <span>{data.overdueTrend || "Overdue items"}</span>
         </div>
       </div>

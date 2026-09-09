@@ -144,7 +144,7 @@ export const SendAnnouncementModal: React.FC<SendAnnouncementModalProps> = ({
               size="md"
               isLoading={isSubmitting}
               disabled={!title.trim() || !message.trim()}
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+              className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
             >
               Broadcast Now
             </Button>

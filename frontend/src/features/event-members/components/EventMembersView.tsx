@@ -183,7 +183,7 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
                 <Button
                   variant="primary"
                   size="md"
-                  className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                  className="bg-[#44D944] hover:bg-[#3bc43b] text-slate-950 font-bold shadow-xs"
                   leftIcon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
