@@ -6,10 +6,7 @@ import { eventMemberService } from "@/services/event-member-service";
 import { teamService } from "@/services/team-service";
 import { useEvent } from "@/providers/event-provider";
 import { Button } from "@/components/ui/button";
-import { EventMembersStatsCards } from "./EventMembersStatsCards";
 import { EventMembersTable, FormattedMember } from "./EventMembersTable";
-import { RecentlyJoinedPanel } from "./RecentlyJoinedPanel";
-import { TeamDistributionDonut, TeamDistributionItem } from "./TeamDistributionDonut";
 
 export interface EventMembersViewProps {
   initialEventId?: string;
@@ -23,7 +20,6 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
   );
   const [members, setMembers] = useState<FormattedMember[]>([]);
   const [teamsList, setTeamsList] = useState<string[]>([]);
-  const [teamDistribution, setTeamDistribution] = useState<TeamDistributionItem[]>([]);
   const [totalTasksCount, setTotalTasksCount] = useState<number>(0);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +36,6 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
     if (!activeId) {
       setMembers([]);
       setTeamsList([]);
-      setTeamDistribution([]);
       setTotalTasksCount(0);
       setIsLoading(false);
       return;
@@ -58,35 +53,6 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
       if (membersData.status === "fulfilled") {
         const rawMembers: FormattedMember[] = (membersData.value as any) || [];
         setMembers(rawMembers);
-
-        // Compute team distribution
-        const counts: Record<string, number> = {};
-        let unassigned = 0;
-
-        rawMembers.forEach((m) => {
-          if (m.teamName) {
-            counts[m.teamName] = (counts[m.teamName] || 0) + 1;
-          } else {
-            unassigned += 1;
-          }
-        });
-
-        const palette = ["#38bdf8", "#22c55e", "#f59e0b", "#a855f7", "#ec4899", "#6366f1"];
-        const dist: TeamDistributionItem[] = Object.keys(counts).map((tName, i) => ({
-          teamName: tName,
-          memberCount: counts[tName],
-          color: palette[i % palette.length],
-        }));
-
-        if (unassigned > 0) {
-          dist.push({
-            teamName: "Unassigned",
-            memberCount: unassigned,
-            color: "#94a3b8",
-          });
-        }
-
-        setTeamDistribution(dist);
       }
 
       if (teamsData.status === "fulfilled") {
@@ -183,7 +149,7 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
                 <Button
                   variant="primary"
                   size="md"
-                  className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+                  className="bg-[#44D944] hover:bg-[#3bc43b] text-slate-950 font-bold shadow-xs"
                   leftIcon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -226,32 +192,32 @@ export const EventMembersView: React.FC<EventMembersViewProps> = ({ initialEvent
         </div>
       )}
 
-      {/* 4 Stats Cards */}
-      <EventMembersStatsCards
-        totalMembers={totalMembersCount}
-        teamsAssigned={teamsAssignedCount}
-        totalTasks={totalTasksCount}
-        unassignedCount={unassignedCount}
-      />
-
-      {/* Main Grid: Table left (2/3), Recently Joined & Team Donut right (1/3) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2">
-          <EventMembersTable
-            members={members}
-            onRemoveMember={handleRemoveMember}
-            isLoading={isLoading}
-            teamsList={teamsList}
-          />
+      {/* Inline Summary */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+          <span>Total Members: </span>
+          <span className="font-bold text-slate-900 dark:text-white">{totalMembersCount}</span>
         </div>
-
-        <div className="space-y-6 lg:sticky lg:top-20">
-          <RecentlyJoinedPanel members={members} />
-          <TeamDistributionDonut
-            distribution={teamDistribution}
-            totalMembers={totalMembersCount}
-          />
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Assigned to Teams: </span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{teamsAssignedCount}</span>
         </div>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Unassigned: </span>
+          <span className="font-semibold text-slate-700 dark:text-slate-300">{unassignedCount}</span>
+        </div>
+      </div>
+
+      {/* Main Table: Full-Width Clean Table */}
+      <div className="space-y-6">
+        <EventMembersTable
+          members={members}
+          onRemoveMember={handleRemoveMember}
+          isLoading={isLoading}
+          teamsList={teamsList}
+        />
       </div>
     </div>
   );

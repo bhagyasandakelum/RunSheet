@@ -7,7 +7,6 @@ import { eventService } from "@/services/event-service";
 import { Event, Invitation } from "@/types/common/entities";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { InvitationStatsCards } from "./InvitationStatsCards";
 import { InvitationsTable } from "./InvitationsTable";
 import { ExpiringSoonPanel } from "./ExpiringSoonPanel";
 import { ReceivedInvitationsView } from "./ReceivedInvitationsView";
@@ -132,7 +131,7 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
             onClick={() => setActiveTab("received")}
             className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "received"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-sm shadow-[#44D944]/25"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -152,7 +151,7 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
             onClick={() => setActiveTab("sent")}
             className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "sent"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-sm shadow-[#44D944]/25"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -182,7 +181,7 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
                 <select
                   value={selectedEventId}
                   onChange={(e) => handleEventChange(e.target.value)}
-                  className="h-9 px-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="h-9 px-3 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#44D944]/40"
                 >
                   {events.map((evt) => (
                     <option key={evt.eventId} value={evt.eventId}>
@@ -214,7 +213,7 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
                 <Button
                   variant="primary"
                   size="sm"
-                  className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                  className="bg-[#44D944] hover:bg-[#3bc43b] text-slate-950 font-bold text-xs shadow-xs"
                   leftIcon={
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -236,13 +235,28 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
             </div>
           )}
 
-          {/* 4 Stats Cards */}
-          <InvitationStatsCards
-            pendingCount={pendingCount}
-            acceptedCount={acceptedCount}
-            rejectedCount={rejectedCount}
-            expiredCount={expiredCount}
-          />
+          {/* Inline Summary */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <div>
+              <span>Pending: </span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400">{pendingCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Accepted: </span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{acceptedCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Rejected: </span>
+              <span className="font-semibold text-slate-600 dark:text-slate-400">{rejectedCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Expired: </span>
+              <span className="font-semibold text-rose-600 dark:text-rose-400">{expiredCount}</span>
+            </div>
+          </div>
 
           {/* Main Grid: Invitations Table left (2/3), Expiring Soon Panel right (1/3) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

@@ -583,7 +583,7 @@ export const TaskDetailsView: React.FC<TaskDetailsViewProps> = ({ taskId }) => {
                   variant="primary"
                   size="md"
                   disabled={isSubmittingStatus || selectedStatus === task.status}
-                  className="w-full bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm mt-2 disabled:opacity-50"
+                  className="w-full bg-[#44D944] text-slate-950 font-bold text-xs shadow-xs mt-2 disabled:opacity-50 hover:brightness-105"
                   leftIcon={
                     isSubmittingStatus ? (
                       <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">

@@ -248,7 +248,7 @@ export const InviteMemberForm: React.FC<InviteMemberFormProps> = ({ initialEvent
                 size="md"
                 isLoading={isSending}
                 disabled={teams.length === 0 || isLoadingTeams}
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold disabled:bg-slate-300 dark:disabled:bg-slate-750 disabled:text-slate-500"
+                className="bg-[#44D944] text-slate-950 font-bold hover:brightness-105 shadow-xs disabled:bg-slate-300 dark:disabled:bg-slate-750 disabled:text-slate-500"
               >
                 Send Invitation
               </Button>

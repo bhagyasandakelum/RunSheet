@@ -76,7 +76,7 @@ export const ProfileView: React.FC = () => {
           <Button
             variant="primary"
             size="md"
-            className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm shadow-emerald-500/20"
+            className="bg-[#44D944] text-slate-950 font-bold text-xs shadow-xs hover:brightness-105"
             leftIcon={
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -97,11 +97,9 @@ export const ProfileView: React.FC = () => {
           {/* Left Column: Profile Card & Account Metadata */}
           <div className="md:col-span-5 space-y-6">
             {/* Main Profile Summary Card */}
-            <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-xs">
-              {/* Top Banner Gradient */}
-              <div className="h-28 bg-gradient-to-br from-emerald-100 via-teal-50 to-emerald-200 dark:from-emerald-950/60 dark:via-[#131B2E] dark:to-teal-950/40 relative">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:12px_12px]" />
-              </div>
+            <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-xs">
+              {/* Top Banner */}
+              <div className="h-24 bg-slate-100 dark:bg-slate-900 border-b border-slate-200/60 dark:border-slate-800 relative" />
 
               {/* Avatar & Details */}
               <div className="px-6 pb-6 pt-0 relative flex flex-col items-center text-center">

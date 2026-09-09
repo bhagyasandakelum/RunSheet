@@ -11,12 +11,8 @@ import {
 } from "@/services/dashboard-service";
 import {
   OrganizerHeroBanner,
-  OrganizerMetricCards,
-  EventProgressDonutCard,
-  TaskAnalyticsCard,
   TeamPerformanceTable,
   HeroBanner,
-  MetricCards,
   ActionItemsTable,
   MyTeamCard,
   ActiveEventCard,
@@ -175,7 +171,7 @@ export default function DashboardPage() {
                       variant="primary"
                       isLoading={isAcceptingInviteId === inv.invitationId}
                       onClick={() => handleQuickAccept(inv)}
-                      className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                      className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
                     >
                       Accept & Join
                     </Button>
@@ -191,8 +187,8 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <div className="p-8 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl shadow-xs space-y-5">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+        <div className="p-8 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-xs space-y-5">
+          <div className="w-16 h-16 rounded-2xl bg-[#44D944]/10 border border-[#44D944]/20 text-[#44D944] flex items-center justify-center mx-auto">
             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -210,7 +206,7 @@ export default function DashboardPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs px-6"
+                className="bg-[#44D944] text-slate-950 font-bold text-xs px-6 hover:brightness-105 shadow-xs"
               >
                 + Create New Event
               </Button>
@@ -307,7 +303,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode("organizer")}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === "organizer"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -321,7 +317,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode("member")}
             className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === "member"
-                ? "bg-[#28C740] text-slate-950 shadow-sm shadow-[#28C740]/25"
+                ? "bg-[#44D944] text-slate-950 shadow-xs"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
@@ -343,7 +339,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <Link href="/invitations">
-            <Button size="sm" variant="primary" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs">
+            <Button size="sm" variant="primary" className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs">
               Review & Accept →
             </Button>
           </Link>
@@ -361,14 +357,13 @@ export default function DashboardPage() {
 
       {isLoadingDashboard ? (
         <div className="py-20 text-center text-xs font-semibold text-slate-400">
-          Updating dashboard metrics...
+          Updating dashboard...
         </div>
       ) : viewMode === "organizer" ? (
         /* ========================================================= */
         /* 1. ORGANIZER DASHBOARD                                   */
         /* ========================================================= */
         <div className="space-y-6">
-          {/* Hero Banner with real event data */}
           <OrganizerHeroBanner
             userName={userName}
             eventName={eventName}
@@ -377,35 +372,53 @@ export default function DashboardPage() {
             status={selectedEvent?.status ? `${selectedEvent.status} Event` : "Active Event"}
           />
 
-          {/* 6 Metric KPI Cards */}
-          <OrganizerMetricCards metrics={organizerMetrics} />
+          {/* Inline Summary Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3 px-4 bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Tasks:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {organizerMetrics.completedTasks} / {organizerMetrics.totalTasks} completed
+                </span>
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  ({organizerMetrics.completionPercentage}%)
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">In Progress:</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {statusDistribution.inProgress}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Pending:</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {statusDistribution.pending}
+                </span>
+              </div>
+              {organizerMetrics.overdueTasks > 0 && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Overdue:</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      {organizerMetrics.overdueTasks}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
 
-          {/* 2-Column Analytics Section: Event Progress Donut & Task Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <EventProgressDonutCard
-              progressPercentage={organizerMetrics.completionPercentage}
-              completed={organizerMetrics.completedTasks}
-              inProgress={statusDistribution.inProgress}
-              pending={statusDistribution.pending}
-              overdue={organizerMetrics.overdueTasks}
-              statusLabel={
-                organizerMetrics.completionPercentage >= 100
-                  ? "Completed"
-                  : organizerMetrics.completionPercentage >= 70
-                  ? "Excellent Progress"
-                  : organizerMetrics.completionPercentage > 0
-                  ? "In Progress"
-                  : "Not Started"
-              }
-            />
-
-            <TaskAnalyticsCard
-              statusDistribution={statusDistribution}
-              priorityLevels={priorityLevels}
-            />
+            <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+              <span>{organizerMetrics.teamsCount} teams</span>
+              <span>·</span>
+              <span>{organizerMetrics.membersCount} members</span>
+            </div>
           </div>
 
-          {/* Bottom Full-Width Table: Team Performance */}
+          {/* Main Table: Team Performance & Work Breakdown */}
           <TeamPerformanceTable teams={teamsPerformanceData} />
         </div>
       ) : (
@@ -419,13 +432,47 @@ export default function DashboardPage() {
             eventName={memberEventName}
           />
 
-          {/* Member Metric Cards */}
-          <MetricCards data={memberStats} />
+          {/* Inline Member Summary Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3 px-4 bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Assigned Tasks:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {memberStats.assigned}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Completed:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {memberStats.completed}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Pending Action:</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {memberStats.pending}
+                </span>
+              </div>
+              {memberStats.overdue > 0 && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Overdue:</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      {memberStats.overdue}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
           {/* Action Items List */}
           <ActionItemsTable items={memberData?.actionItems || []} />
 
-          {/* Team and Active Event Info Cards */}
+          {/* Team and Active Event Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MyTeamCard team={memberData?.myTeam} />
             <ActiveEventCard event={memberData?.activeEvent} />

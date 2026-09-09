@@ -110,22 +110,15 @@ export const CreateEventForm: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Form Area */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Card 1: Basic Information */}
+          {/* Section 1: Event Details */}
           <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-emerald-500">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </span>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Basic Information
-              </h2>
-            </div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">
+              General Information
+            </h2>
 
             {/* Event Name */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Event Name <span className="text-red-500">*</span>
               </label>
               <Input
@@ -142,71 +135,50 @@ export const CreateEventForm: React.FC = () => {
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Description
               </label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Provide details and operational objectives for this event."
-                rows={4}
+                rows={3}
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          {/* Row 2: Location & Schedule */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Location Card */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-emerald-500">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          {/* Section 2: Date & Location */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">
+              Location & Schedule
+            </h2>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Venue <span className="text-red-500">*</span>
+              </label>
+              <Input
+                value={venue}
+                onChange={(e) => {
+                  setVenue(e.target.value);
+                  if (errors.venue) setErrors({ ...errors, venue: "" });
+                }}
+                placeholder="e.g. Main Auditorium / Convention Hall"
+                error={errors.venue}
+                disabled={isSubmitting}
+                leftIcon={
+                  <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Location / Venue
-                </h2>
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-                  Venue <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={venue}
-                  onChange={(e) => {
-                    setVenue(e.target.value);
-                    if (errors.venue) setErrors({ ...errors, venue: "" });
-                  }}
-                  placeholder="e.g. Main Auditorium / Convention Hall"
-                  error={errors.venue}
-                  disabled={isSubmitting}
-                  leftIcon={
-                    <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  }
-                />
-              </div>
+                }
+              />
             </div>
 
-            {/* Schedule Card */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-emerald-500">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Schedule
-                </h2>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   Start Date & Time <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -222,7 +194,7 @@ export const CreateEventForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   End Date & Time <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -239,29 +211,21 @@ export const CreateEventForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Row 3: Event Status & Organizer */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Status Card */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-emerald-500">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Event Status
-                </h2>
-              </div>
+          {/* Section 3: Settings & Ownership */}
+          <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider pb-2 border-b border-slate-100 dark:border-slate-800">
+              Settings & Ownership
+            </h2>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                   Initial Status
                 </label>
                 <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value as EventStatus)}
-                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#44D944]/40"
                   disabled={submittingAction !== null}
                 >
                   <option value={EventStatus.Active}>Live (Active)</option>
@@ -271,23 +235,9 @@ export const CreateEventForm: React.FC = () => {
                   Events can be published Live immediately or saved as a Draft for future release.
                 </p>
               </div>
-            </div>
-
-            {/* Organizer Card */}
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-emerald-500">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Organizer
-                </h2>
-              </div>
 
               <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800">
-                <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-xs font-black text-emerald-600 dark:text-emerald-400">
+                <div className="w-10 h-10 rounded-full bg-[#44D944]/20 border border-[#44D944]/30 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-[#44D944]">
                   {organizerName.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -328,7 +278,7 @@ export const CreateEventForm: React.FC = () => {
                 onClick={() => handleSave(false)}
                 disabled={submittingAction !== null}
                 isLoading={submittingAction === "live"}
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold min-w-[140px]"
+                className="bg-[#44D944] text-slate-950 font-bold hover:brightness-105 min-w-[140px] shadow-xs"
               >
                 Create Event
               </Button>

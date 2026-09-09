@@ -228,7 +228,7 @@ export const TasksListView: React.FC = () => {
               <Button
                 variant="primary"
                 size="md"
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs shadow-sm"
+                className="bg-[#44D944] text-slate-950 font-bold text-xs shadow-xs hover:brightness-105"
                 leftIcon={
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -248,42 +248,26 @@ export const TasksListView: React.FC = () => {
         </div>
       )}
 
-      {/* 4 Metric Badges Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Total Tasks
-          </p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {totalTasks}
-          </p>
+      {/* Inline Summary */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+          <span>Total Tasks: </span>
+          <span className="font-bold text-slate-900 dark:text-white">{totalTasks}</span>
         </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">
-            In Progress
-          </p>
-          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">
-            {inProgressTasks}
-          </p>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>In Progress: </span>
+          <span className="font-semibold text-blue-600 dark:text-blue-400">{inProgressTasks}</span>
         </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">
-            Completed
-          </p>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-            {completedTasks}
-          </p>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Completed: </span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{completedTasks}</span>
         </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-xs">
-          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider">
-            Pending / Overdue
-          </p>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-            {pendingTasks + overdueTasks}
-          </p>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Pending / Overdue: </span>
+          <span className="font-semibold text-amber-600 dark:text-amber-400">{pendingTasks + overdueTasks}</span>
         </div>
       </div>
 

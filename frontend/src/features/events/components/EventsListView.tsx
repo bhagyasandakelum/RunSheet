@@ -115,7 +115,7 @@ export const EventsListView: React.FC = () => {
             <Button
               variant="primary"
               size="md"
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+              className="bg-[#44D944] text-slate-950 font-bold hover:brightness-105 shadow-xs"
               leftIcon={
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -138,9 +138,9 @@ export const EventsListView: React.FC = () => {
               <button
                 key={r}
                 onClick={() => setRoleFilter(r)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   roleFilter === r
-                    ? "bg-[#28c740] text-white shadow-xs"
+                    ? "bg-[#44D944] text-slate-950 shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
@@ -212,7 +212,7 @@ export const EventsListView: React.FC = () => {
           </div>
           <div className="flex items-center justify-center gap-3 pt-2">
             <Link href="/events/create">
-              <Button variant="primary" size="md" className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold">
+              <Button variant="primary" size="md" className="bg-[#44D944] hover:bg-[#3bc43b] text-slate-950 font-bold shadow-xs">
                 Create First Event
               </Button>
             </Link>
@@ -234,21 +234,19 @@ export const EventsListView: React.FC = () => {
             return (
               <div
                 key={evt.eventId}
-                className="group rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                className="group rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden"
               >
                 {/* Top Cover Banner */}
-                <div className="relative h-28 w-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-teal-900 p-3.5 flex flex-col justify-between overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:14px_14px] opacity-15" />
-
+                <div className="relative h-24 w-full bg-slate-900 dark:bg-slate-950 p-4 flex flex-col justify-between overflow-hidden border-b border-slate-200/60 dark:border-slate-800">
                   <div className="relative z-10 flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       {isOrganizer ? (
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/80 backdrop-blur-md text-[9px] font-extrabold text-white shadow-xs">
-                          👑 Organizer
+                        <span className="px-2 py-0.5 rounded-md bg-[#44D944]/20 border border-[#44D944]/30 text-[10px] font-bold text-[#44D944]">
+                          Organizer
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/80 backdrop-blur-md text-[9px] font-extrabold text-white shadow-xs">
-                          👤 Team Member
+                        <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-semibold text-slate-300 border border-slate-700">
+                          Team Member
                         </span>
                       )}
                     </div>
@@ -257,8 +255,8 @@ export const EventsListView: React.FC = () => {
                     </Badge>
                   </div>
 
-                  <div className="relative z-10 flex items-center gap-2 text-white text-[11px] font-semibold">
-                    <svg className="w-3.5 h-3.5 text-white/80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="relative z-10 flex items-center gap-2 text-slate-300 text-[11px] font-medium">
+                    <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>{formattedDates}</span>
@@ -324,7 +322,7 @@ export const EventsListView: React.FC = () => {
                         </Link>
                       )}
                       <Link href={`/events/${evt.eventId}`}>
-                        <Button variant="primary" size="sm" className="text-xs bg-emerald-500 hover:bg-emerald-600 text-white font-bold">
+                        <Button variant="primary" size="sm" className="text-xs bg-[#44D944] text-slate-950 font-bold hover:brightness-105">
                           View Details
                         </Button>
                       </Link>

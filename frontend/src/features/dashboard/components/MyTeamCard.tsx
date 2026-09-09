@@ -31,16 +31,16 @@ export const MyTeamCard: React.FC<MyTeamCardProps> = ({ team }) => {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-br from-sky-100/60 via-teal-50/40 to-slate-50/60 dark:from-slate-800/80 dark:via-slate-850 dark:to-slate-900/90 p-5 shadow-xs flex flex-col justify-between min-h-[160px]">
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#131b2e] p-5 shadow-xs flex flex-col justify-between min-h-[160px] select-none">
       <div>
         <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-sm">
-          <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4 text-[#44D944]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           <span>My Team</span>
         </div>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-1">
           {activeTeam.teamName}
         </p>
       </div>

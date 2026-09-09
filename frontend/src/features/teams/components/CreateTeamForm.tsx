@@ -290,7 +290,7 @@ export const CreateTeamForm: React.FC = () => {
               size="md"
               isLoading={isSubmitting}
               disabled={!teamName.trim() || !selectedEventId}
-              className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold px-6"
+              className="bg-[#44D944] text-slate-950 font-bold px-6 hover:brightness-105 shadow-xs"
             >
               Create Team
             </Button>

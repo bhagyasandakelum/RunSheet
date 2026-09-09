@@ -266,7 +266,7 @@ export const AddTeamMemberModal: React.FC<AddTeamMemberModalProps> = ({
             onClick={handleAddMember}
             isLoading={isSubmitting}
             disabled={!selectedUser && !manualEmail.trim()}
-            className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold"
+            className="bg-[#44D944] text-slate-950 font-bold hover:brightness-105 shadow-xs"
           >
             Add Member
           </Button>

@@ -87,23 +87,18 @@ export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
       </div>
 
       {/* Card Body */}
-      <div className="rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl">
-        {/* Visual Cover Banner with Glowing Mesh Gradient */}
-        <div className="relative h-32 w-full bg-gradient-to-tr from-slate-900 via-indigo-950 to-teal-900 p-4 flex flex-col justify-between overflow-hidden">
-          {/* Subtle Cyber Grid / Light Accents */}
-          <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-20" />
-          <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-emerald-500/20 blur-2xl" />
-          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-indigo-500/25 blur-2xl" />
-
+      <div className="rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden transition-all duration-200">
+        {/* Visual Cover Banner */}
+        <div className="relative h-28 w-full bg-slate-900 dark:bg-slate-950 p-4 flex flex-col justify-between overflow-hidden border-b border-slate-200/60 dark:border-slate-800">
           {/* Top Bar inside Banner */}
           <div className="relative z-10 flex items-center justify-between">
-            <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-semibold text-white/90 border border-white/20">
+            <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-semibold text-slate-300 border border-slate-700">
               RunSheet
             </span>
             <Badge
               variant={getStatusVariant(status) as any}
               size="sm"
-              className="backdrop-blur-md capitalize"
+              className="capitalize"
             >
               {status}
             </Badge>
@@ -111,11 +106,11 @@ export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
 
           {/* Date Badge floating in banner */}
           <div className="relative z-10 flex items-center gap-2">
-            <div className="px-2.5 py-1 rounded-xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-md shadow-sm text-center min-w-[42px] border border-white/20">
-              <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 tracking-wider block leading-tight">
+            <div className="px-2.5 py-1 rounded-lg bg-slate-800/90 text-center min-w-[42px] border border-slate-700">
+              <span className="text-[9px] font-bold text-[#44D944] tracking-wider block leading-tight">
                 {monthShort}
               </span>
-              <span className="text-sm font-black text-slate-900 dark:text-white block leading-tight">
+              <span className="text-sm font-black text-white block leading-tight">
                 {dayNumber}
               </span>
             </div>

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEvent } from "@/providers/event-provider";
 import { useTheme } from "@/providers/theme-provider";
+import { notificationService } from "@/services/notification-service";
 import { UserMenu } from "./user-menu";
 
 export interface HeaderProps {
@@ -15,6 +17,31 @@ export interface HeaderProps {
   onSelectEvent?: (eventId: string) => void;
 }
 
+const getBreadcrumb = (pathname: string) => {
+  if (pathname.startsWith("/events/create")) return { parent: "Events", current: "Create Event" };
+  if (pathname.match(/^\/events\/[^/]+\/edit/)) return { parent: "Events", current: "Edit Event" };
+  if (pathname.match(/^\/events\/[^/]+/)) return { parent: "Events", current: "Event Overview" };
+  if (pathname.startsWith("/events")) return { parent: "RunSheet", current: "Events" };
+
+  if (pathname.startsWith("/teams/create")) return { parent: "Teams", current: "Create Team" };
+  if (pathname.match(/^\/teams\/[^/]+\/edit/)) return { parent: "Teams", current: "Edit Team" };
+  if (pathname.match(/^\/teams\/[^/]+/)) return { parent: "Teams", current: "Team Details" };
+  if (pathname.startsWith("/teams")) return { parent: "RunSheet", current: "Teams" };
+
+  if (pathname.startsWith("/tasks/create")) return { parent: "Tasks", current: "Create Task" };
+  if (pathname.match(/^\/tasks\/[^/]+\/edit/)) return { parent: "Tasks", current: "Edit Task" };
+  if (pathname.match(/^\/tasks\/[^/]+/)) return { parent: "Tasks", current: "Task Details" };
+  if (pathname.startsWith("/tasks")) return { parent: "RunSheet", current: "Tasks" };
+
+  if (pathname.startsWith("/members")) return { parent: "RunSheet", current: "Team Members" };
+  if (pathname.startsWith("/invitations")) return { parent: "RunSheet", current: "Invitations" };
+  if (pathname.startsWith("/notifications")) return { parent: "RunSheet", current: "Notifications" };
+  if (pathname.startsWith("/profile")) return { parent: "RunSheet", current: "Profile" };
+  if (pathname.startsWith("/settings")) return { parent: "RunSheet", current: "Settings" };
+
+  return { parent: "RunSheet", current: "Dashboard" };
+};
+
 export const Header: React.FC<HeaderProps> = ({
   onMenuToggle,
   onSearch,
@@ -22,11 +49,33 @@ export const Header: React.FC<HeaderProps> = ({
   eventsList: propEventsList,
   onSelectEvent: propSelectEvent,
 }) => {
+  const pathname = usePathname();
+  const breadcrumb = getBreadcrumb(pathname);
   const { events, selectedEvent, setSelectedEventId } = useEvent();
   const { resolvedTheme, toggleTheme } = useTheme();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUnread = async () => {
+      try {
+        const stats = await notificationService.getNotificationStatistics();
+        if (isMounted) {
+          setUnreadCount(stats?.unread ?? 0);
+        }
+      } catch {
+        // Fallback: silently ignore network error
+      }
+    };
+
+    fetchUnread();
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
 
   const activeEventName =
     propEventName ||
@@ -45,16 +94,13 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     onSearch?.(e.target.value);
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-[#111622] border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between gap-4 select-none">
-      {/* Left: Mobile Toggle, Breadcrumb & Event Selector */}
+    <header className="h-16 bg-white dark:bg-[#111622] border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between gap-4 select-none">
       <div className="flex items-center gap-3">
         {onMenuToggle && (
           <button
@@ -68,19 +114,17 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-400 font-medium">App</span>
-          <span className="text-slate-300 dark:text-slate-600 font-bold">›</span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold">Dashboard</span>
+        <div className="flex items-center gap-1.5 text-xs">
+          <span className="text-slate-400 font-medium">{breadcrumb.parent}</span>
+          <span className="text-slate-300 dark:text-slate-600 font-semibold">/</span>
+          <span className="text-slate-900 dark:text-white font-bold">{breadcrumb.current}</span>
         </div>
 
-        {/* Event Selector Pill Dropdown */}
         <div className="relative ml-2 hidden sm:block">
           <button
             type="button"
             onClick={() => setIsEventDropdownOpen(!isEventDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -91,7 +135,6 @@ export const Header: React.FC<HeaderProps> = ({
             </svg>
           </button>
 
-          {/* Dropdown Menu */}
           {isEventDropdownOpen && (
             <>
               <div
@@ -124,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
                           evt.eventName === activeEventName
-                            ? "bg-emerald-500 text-white font-bold"
+                            ? "bg-[#44D944] text-slate-950 font-bold"
                             : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                         }`}
                       >
@@ -144,7 +187,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Center: Search Input with shortcut hint ⌘K */}
       <div className="flex-1 max-w-md hidden md:block">
         <div className="relative">
           <svg
@@ -168,9 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Controls */}
       <div className="flex items-center gap-3">
-        {/* Dark/Light Mode Moon/Sun Toggle */}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
@@ -188,19 +228,19 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </button>
 
-        {/* Notification Bell */}
         <Link
           href="/notifications"
           className="relative p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
-          title="Notifications"
+          title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#111622]" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#44D944] ring-2 ring-white dark:ring-[#111622]" />
+          )}
         </Link>
 
-        {/* User Menu Dropdown */}
         <UserMenu />
       </div>
     </header>

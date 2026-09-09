@@ -83,7 +83,7 @@ export const ActionItemsTable: React.FC<ActionItemsTableProps> = ({
     const s = (status || "Assigned").toLowerCase();
     if (s === "completed") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#28c740] text-white shadow-xs">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
           </svg>

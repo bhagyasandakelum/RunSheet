@@ -169,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
         </div>
 
         {/* Primary Navigation Items */}
-        <nav className="p-4 space-y-1.5 flex-1">
+        <nav className="p-3.5 space-y-1 flex-1">
           {PRIMARY_NAV.map((item) => {
             const isActive =
               pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
@@ -180,10 +180,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
                   isActive
-                    ? "bg-[#28c740] hover:bg-[#23b33a] text-white shadow-sm shadow-green-500/25"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-[#44D944] text-slate-950 font-semibold shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
                 )}
               >
                 <span className="shrink-0">{item.icon}</span>
@@ -192,8 +192,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
             );
           })}
 
-          <div className="pt-6 pb-2">
-            <div className="h-px bg-slate-200/60 dark:bg-slate-800/80 my-2" />
+          <div className="pt-4 pb-2">
+            <div className="h-px bg-slate-200/60 dark:bg-slate-800/80 my-1" />
           </div>
 
           {/* Secondary Navigation */}
@@ -206,10 +206,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
                   isActive
-                    ? "bg-[#28c740] text-white shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-[#44D944] text-slate-950 font-semibold shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
                 )}
               >
                 <span className="shrink-0">{item.icon}</span>

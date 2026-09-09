@@ -7,7 +7,6 @@ import { teamService } from "@/services/team-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Team } from "@/types/common/entities";
 import { Button } from "@/components/ui/button";
-import { TeamsStatsCards } from "./TeamsStatsCards";
 import { TeamCard } from "./TeamCard";
 import { ManageTeamMembersModal } from "./ManageTeamMembersModal";
 import { DeleteTeamModal } from "./DeleteTeamModal";
@@ -131,7 +130,7 @@ export const TeamsListView: React.FC<TeamsListViewProps> = ({ initialEventId }) 
               <Button
                 variant="primary"
                 size="md"
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
                 leftIcon={
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -154,13 +153,22 @@ export const TeamsListView: React.FC<TeamsListViewProps> = ({ initialEventId }) 
         </div>
       )}
 
-      {/* 4 Summary Stat Cards */}
-      <TeamsStatsCards
-        totalTeams={totalTeams}
-        totalMembers={totalMembers}
-        activeTeams={activeTeams}
-        needsAttention={needsAttention}
-      />
+      {/* Inline Summary */}
+      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        <span>{totalTeams} total teams</span>
+        <span>·</span>
+        <span>{totalMembers} total members</span>
+        <span>·</span>
+        <span>{activeTeams} active</span>
+        {needsAttention > 0 && (
+          <>
+            <span>·</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">
+              {needsAttention} need attention
+            </span>
+          </>
+        )}
+      </div>
 
       {/* Search & Filter Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 shadow-xs">
@@ -221,7 +229,7 @@ export const TeamsListView: React.FC<TeamsListViewProps> = ({ initialEventId }) 
               <Button
                 variant="primary"
                 size="md"
-                className="bg-[#28c740] hover:bg-[#23b33a] text-white font-bold text-xs"
+                className="bg-[#44D944] text-slate-950 font-bold text-xs hover:brightness-105 shadow-xs"
               >
                 + Create First Team
               </Button>
