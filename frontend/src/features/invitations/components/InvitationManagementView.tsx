@@ -7,7 +7,6 @@ import { eventService } from "@/services/event-service";
 import { Event, Invitation } from "@/types/common/entities";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { InvitationStatsCards } from "./InvitationStatsCards";
 import { InvitationsTable } from "./InvitationsTable";
 import { ExpiringSoonPanel } from "./ExpiringSoonPanel";
 import { ReceivedInvitationsView } from "./ReceivedInvitationsView";
@@ -236,13 +235,28 @@ export const InvitationManagementView: React.FC<InvitationManagementViewProps> =
             </div>
           )}
 
-          {/* 4 Stats Cards */}
-          <InvitationStatsCards
-            pendingCount={pendingCount}
-            acceptedCount={acceptedCount}
-            rejectedCount={rejectedCount}
-            expiredCount={expiredCount}
-          />
+          {/* Inline Summary */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <div>
+              <span>Pending: </span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400">{pendingCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Accepted: </span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">{acceptedCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Rejected: </span>
+              <span className="font-semibold text-slate-600 dark:text-slate-400">{rejectedCount}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+            <div>
+              <span>Expired: </span>
+              <span className="font-semibold text-rose-600 dark:text-rose-400">{expiredCount}</span>
+            </div>
+          </div>
 
           {/* Main Grid: Invitations Table left (2/3), Expiring Soon Panel right (1/3) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

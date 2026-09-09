@@ -137,54 +137,21 @@ export const ReceivedInvitationsView: React.FC = () => {
         </div>
       )}
 
-      {/* Summary KPI Pills */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Pending Invitations
-            </p>
-            <p className="text-2xl font-black text-amber-500 mt-0.5">
-              {pendingList.length}
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-500 flex items-center justify-center">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
+      {/* Inline Summary */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <div>
+          <span>Total Received: </span>
+          <span className="font-bold text-slate-900 dark:text-white">{invitations.length}</span>
         </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Accepted Events
-            </p>
-            <p className="text-2xl font-black text-emerald-500 mt-0.5">
-              {acceptedList.length}
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500 flex items-center justify-center">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Pending: </span>
+          <span className="font-semibold text-amber-600 dark:text-amber-400">{pendingList.length}</span>
         </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Total Received
-            </p>
-            <p className="text-2xl font-black text-slate-800 dark:text-slate-200 mt-0.5">
-              {invitations.length}
-            </p>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
+        <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+        <div>
+          <span>Accepted: </span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{acceptedList.length}</span>
         </div>
       </div>
 

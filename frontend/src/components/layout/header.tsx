@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEvent } from "@/providers/event-provider";
 import { useTheme } from "@/providers/theme-provider";
+import { notificationService } from "@/services/notification-service";
 import { UserMenu } from "./user-menu";
 
 export interface HeaderProps {
@@ -55,6 +56,26 @@ export const Header: React.FC<HeaderProps> = ({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [isEventDropdownOpen, setIsEventDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUnread = async () => {
+      try {
+        const stats = await notificationService.getNotificationStatistics();
+        if (isMounted) {
+          setUnreadCount(stats?.unread ?? 0);
+        }
+      } catch {
+        // Fallback: silently ignore network error
+      }
+    };
+
+    fetchUnread();
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname]);
 
   const activeEventName =
     propEventName ||
@@ -80,7 +101,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="h-16 bg-white dark:bg-[#111622] border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between gap-4 select-none">
-      {/* Left: Mobile Toggle, Dynamic Breadcrumb & Event Selector */}
       <div className="flex items-center gap-3">
         {onMenuToggle && (
           <button
@@ -94,14 +114,12 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Dynamic Breadcrumbs */}
         <div className="flex items-center gap-1.5 text-xs">
           <span className="text-slate-400 font-medium">{breadcrumb.parent}</span>
           <span className="text-slate-300 dark:text-slate-600 font-semibold">/</span>
-          <span className="text-slate-800 dark:text-slate-200 font-semibold">{breadcrumb.current}</span>
+          <span className="text-slate-900 dark:text-white font-bold">{breadcrumb.current}</span>
         </div>
 
-        {/* Event Selector Pill Dropdown */}
         <div className="relative ml-2 hidden sm:block">
           <button
             type="button"
@@ -117,7 +135,6 @@ export const Header: React.FC<HeaderProps> = ({
             </svg>
           </button>
 
-          {/* Dropdown Menu */}
           {isEventDropdownOpen && (
             <>
               <div
@@ -150,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-left transition-colors ${
                           evt.eventName === activeEventName
-                            ? "bg-emerald-500 text-white font-bold"
+                            ? "bg-[#44D944] text-slate-950 font-bold"
                             : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                         }`}
                       >
@@ -170,7 +187,6 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Center: Search Input with shortcut hint ⌘K */}
       <div className="flex-1 max-w-md hidden md:block">
         <div className="relative">
           <svg
@@ -194,9 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Controls */}
       <div className="flex items-center gap-3">
-        {/* Dark/Light Mode Moon/Sun Toggle */}
         <button
           onClick={toggleTheme}
           className="p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
@@ -214,19 +228,19 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </button>
 
-        {/* Notification Bell */}
         <Link
           href="/notifications"
           className="relative p-2 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
-          title="Notifications"
+          title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}` : "Notifications"}
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#111622]" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#44D944] ring-2 ring-white dark:ring-[#111622]" />
+          )}
         </Link>
 
-        {/* User Menu Dropdown */}
         <UserMenu />
       </div>
     </header>

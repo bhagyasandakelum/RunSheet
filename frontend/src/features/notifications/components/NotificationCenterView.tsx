@@ -187,11 +187,11 @@ export const NotificationCenterView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Unread Pill Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-500/30">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>{unreadCount} UNREAD</span>
-          </div>
+          {unreadCount > 0 && (
+            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              {unreadCount} unread
+            </span>
+          )}
 
           {/* Mark All As Read */}
           {unreadCount > 0 && (

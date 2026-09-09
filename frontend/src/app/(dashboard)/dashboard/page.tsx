@@ -11,12 +11,8 @@ import {
 } from "@/services/dashboard-service";
 import {
   OrganizerHeroBanner,
-  OrganizerMetricCards,
-  EventProgressDonutCard,
-  TaskAnalyticsCard,
   TeamPerformanceTable,
   HeroBanner,
-  MetricCards,
   ActionItemsTable,
   MyTeamCard,
   ActiveEventCard,
@@ -361,14 +357,13 @@ export default function DashboardPage() {
 
       {isLoadingDashboard ? (
         <div className="py-20 text-center text-xs font-semibold text-slate-400">
-          Updating dashboard metrics...
+          Updating dashboard...
         </div>
       ) : viewMode === "organizer" ? (
         /* ========================================================= */
         /* 1. ORGANIZER DASHBOARD                                   */
         /* ========================================================= */
         <div className="space-y-6">
-          {/* Hero Banner with real event data */}
           <OrganizerHeroBanner
             userName={userName}
             eventName={eventName}
@@ -377,35 +372,53 @@ export default function DashboardPage() {
             status={selectedEvent?.status ? `${selectedEvent.status} Event` : "Active Event"}
           />
 
-          {/* 6 Metric KPI Cards */}
-          <OrganizerMetricCards metrics={organizerMetrics} />
+          {/* Inline Summary Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3 px-4 bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Tasks:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {organizerMetrics.completedTasks} / {organizerMetrics.totalTasks} completed
+                </span>
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                  ({organizerMetrics.completionPercentage}%)
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">In Progress:</span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {statusDistribution.inProgress}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Pending:</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {statusDistribution.pending}
+                </span>
+              </div>
+              {organizerMetrics.overdueTasks > 0 && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Overdue:</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      {organizerMetrics.overdueTasks}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
 
-          {/* 2-Column Analytics Section: Event Progress Donut & Task Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <EventProgressDonutCard
-              progressPercentage={organizerMetrics.completionPercentage}
-              completed={organizerMetrics.completedTasks}
-              inProgress={statusDistribution.inProgress}
-              pending={statusDistribution.pending}
-              overdue={organizerMetrics.overdueTasks}
-              statusLabel={
-                organizerMetrics.completionPercentage >= 100
-                  ? "Completed"
-                  : organizerMetrics.completionPercentage >= 70
-                  ? "Excellent Progress"
-                  : organizerMetrics.completionPercentage > 0
-                  ? "In Progress"
-                  : "Not Started"
-              }
-            />
-
-            <TaskAnalyticsCard
-              statusDistribution={statusDistribution}
-              priorityLevels={priorityLevels}
-            />
+            <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+              <span>{organizerMetrics.teamsCount} teams</span>
+              <span>·</span>
+              <span>{organizerMetrics.membersCount} members</span>
+            </div>
           </div>
 
-          {/* Bottom Full-Width Table: Team Performance */}
+          {/* Main Table: Team Performance & Work Breakdown */}
           <TeamPerformanceTable teams={teamsPerformanceData} />
         </div>
       ) : (
@@ -419,13 +432,47 @@ export default function DashboardPage() {
             eventName={memberEventName}
           />
 
-          {/* Member Metric Cards */}
-          <MetricCards data={memberStats} />
+          {/* Inline Member Summary Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3 px-4 bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Assigned Tasks:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {memberStats.assigned}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Completed:</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {memberStats.completed}
+                </span>
+              </div>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-slate-500 dark:text-slate-400">Pending Action:</span>
+                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                  {memberStats.pending}
+                </span>
+              </div>
+              {memberStats.overdue > 0 && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-500 dark:text-slate-400">Overdue:</span>
+                    <span className="font-bold text-rose-600 dark:text-rose-400">
+                      {memberStats.overdue}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
           {/* Action Items List */}
           <ActionItemsTable items={memberData?.actionItems || []} />
 
-          {/* Team and Active Event Info Cards */}
+          {/* Team and Active Event Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MyTeamCard team={memberData?.myTeam} />
             <ActiveEventCard event={memberData?.activeEvent} />

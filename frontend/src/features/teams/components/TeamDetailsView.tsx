@@ -249,51 +249,34 @@ export const TeamDetailsView: React.FC<TeamDetailsViewProps> = ({ teamId }) => {
         </div>
       </div>
 
-      {/* Metrics Row (5 Stat Badges) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Members
-          </p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {members.length}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-            Total Tasks
-          </p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            {totalTasksCount}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs">
-          <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">
-            Completed
-          </p>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-            {completedTasksCount}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs">
-          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">
-            In Progress
-          </p>
-          <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">
-            {inProgressTasksCount}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs">
-          <p className="text-[11px] font-bold text-rose-500 uppercase tracking-wider">
-            Critical / Blocked
-          </p>
-          <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">
-            {criticalTasksCount}
-          </p>
+      {/* Inline Summary Strip */}
+      <div className="p-3.5 rounded-xl bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5">
+          <div>
+            <span className="text-slate-500 dark:text-slate-400">Members: </span>
+            <span className="font-bold text-slate-900 dark:text-white">{members.length}</span>
+          </div>
+          <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+          <div>
+            <span className="text-slate-500 dark:text-slate-400">Tasks: </span>
+            <span className="font-bold text-slate-900 dark:text-white">
+              {completedTasksCount} / {totalTasksCount} completed
+            </span>
+          </div>
+          <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+          <div>
+            <span className="text-slate-500 dark:text-slate-400">In Progress: </span>
+            <span className="font-semibold text-blue-600 dark:text-blue-400">{inProgressTasksCount}</span>
+          </div>
+          {criticalTasksCount > 0 && (
+            <>
+              <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">·</span>
+              <div className="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span>{criticalTasksCount} critical</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
