@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { RunSheetLogo } from "@/components/common/logo";
 
 export interface InviteMemberLivePreviewProps {
   eventName?: string;
@@ -42,9 +43,7 @@ export const InviteMemberLivePreview: React.FC<InviteMemberLivePreviewProps> = (
           <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:14px_14px] opacity-20" />
 
           <div className="relative z-10 flex items-center justify-between">
-            <span className="px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-semibold text-white/90">
-              RunSheet Invitation
-            </span>
+            <RunSheetLogo size="xs" textClassName="text-white text-xs font-bold" />
             <Badge variant="warning" size="sm">
               Pending
             </Badge>

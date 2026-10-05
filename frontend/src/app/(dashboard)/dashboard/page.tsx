@@ -18,6 +18,7 @@ import {
   ActiveEventCard,
 } from "@/features/dashboard";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 import { invitationService } from "@/services/invitation-service";
 import { Invitation } from "@/types/common/entities";
 
@@ -122,11 +123,7 @@ export default function DashboardPage() {
   };
 
   if (isEventsLoading) {
-    return (
-      <div className="py-24 text-center text-xs font-semibold text-slate-400">
-        Loading your workspace...
-      </div>
-    );
+    return <PageLoader />;
   }
 
   // 0 Events State
@@ -356,9 +353,7 @@ export default function DashboardPage() {
       )}
 
       {isLoadingDashboard ? (
-        <div className="py-20 text-center text-xs font-semibold text-slate-400">
-          Updating dashboard...
-        </div>
+        <PageLoader />
       ) : viewMode === "organizer" ? (
         /* ========================================================= */
         /* 1. ORGANIZER DASHBOARD                                   */

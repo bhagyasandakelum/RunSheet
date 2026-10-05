@@ -3,6 +3,7 @@
 import React from "react";
 import { EventStatus } from "@/types/common/enums";
 import { Badge } from "@/components/ui/badge";
+import { RunSheetLogo } from "@/components/common/logo";
 
 export interface EventLivePreviewProps {
   eventName?: string;
@@ -92,9 +93,7 @@ export const EventLivePreview: React.FC<EventLivePreviewProps> = ({
         <div className="relative h-28 w-full bg-slate-900 dark:bg-slate-950 p-4 flex flex-col justify-between overflow-hidden border-b border-slate-200/60 dark:border-slate-800">
           {/* Top Bar inside Banner */}
           <div className="relative z-10 flex items-center justify-between">
-            <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-semibold text-slate-300 border border-slate-700">
-              RunSheet
-            </span>
+            <RunSheetLogo size="xs" textClassName="text-white text-xs font-bold" />
             <Badge
               variant={getStatusVariant(status) as any}
               size="sm"

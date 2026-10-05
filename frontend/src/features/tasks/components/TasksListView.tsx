@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Task, Team } from "@/types/common/entities";
 import { TaskPriority, TaskStatus } from "@/types/common/enums";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 import { AssignMemberModal } from "./AssignMemberModal";
 import { DeleteTaskModal } from "./DeleteTaskModal";
 
@@ -349,9 +350,7 @@ export const TasksListView: React.FC = () => {
       {/* Tasks Table Card */}
       <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-xs">
         {isLoading ? (
-          <div className="py-24 text-center text-xs font-semibold text-slate-400">
-            Loading tasks...
-          </div>
+          <PageLoader />
         ) : filteredTasks.length === 0 ? (
           <div className="py-20 text-center text-xs text-slate-400 space-y-3">
             <p>No tasks match the selected criteria.</p>

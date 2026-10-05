@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useEvent } from "@/providers/event-provider";
+import { RunSheetLogo } from "@/components/common/logo";
 import { cn } from "@/lib/utils/cn";
 
 export interface NavItem {
@@ -144,22 +145,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, userProfile }
       >
         {/* Brand Header */}
         <div className="h-20 px-6 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white shadow-sm shadow-emerald-500/20">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">
-                RunSheet
-              </span>
-            </div>
+          <Link href="/dashboard" className="flex items-center">
+            <RunSheetLogo size="md" />
           </Link>
 
           <button
             onClick={onClose}
-            className="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+            className="md:hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer"
             aria-label="Close sidebar"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useEvent } from "@/providers/event-provider";
 import { eventService } from "@/services/event-service";
 import { EventStatus } from "@/types/common/enums";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { EventLivePreview } from "./EventLivePreview";
 export const CreateEventForm: React.FC = () => {
   const router = useRouter();
   const { user } = useAuth();
+  const { refreshEvents } = useEvent();
 
   // Form State
   const [eventName, setEventName] = useState("");
@@ -71,6 +73,9 @@ export const CreateEventForm: React.FC = () => {
         endDate: new Date(endDate).toISOString(),
         status: desiredStatus,
       } as any);
+
+      // Instantly synchronize the created event with application state
+      await refreshEvents(createdEvent.eventId);
 
       router.push(`/events/${createdEvent.eventId}`);
     } catch (err: any) {

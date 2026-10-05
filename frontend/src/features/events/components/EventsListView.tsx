@@ -4,16 +4,18 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { eventService } from "@/services/event-service";
 import { useAuth } from "@/hooks/use-auth";
+import { useEvent } from "@/providers/event-provider";
 import { Event } from "@/types/common/entities";
 import { EventStatus } from "@/types/common/enums";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
+import { PageLoader } from "@/components/common/page-loader";
 import { DeleteEventModal } from "./DeleteEventModal";
 
 export const EventsListView: React.FC = () => {
   const { user } = useAuth();
+  const { refreshEvents } = useEvent();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export const EventsListView: React.FC = () => {
   const handleDeleteConfirm = async () => {
     if (!eventToDelete) return;
     await eventService.deleteEvent(eventToDelete.eventId);
+    await refreshEvents();
     setEventToDelete(null);
     fetchEvents();
   };
@@ -184,10 +187,7 @@ export const EventsListView: React.FC = () => {
 
       {/* Content Area */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-3">
-          <Spinner size="lg" className="text-emerald-500" />
-          <p className="text-xs text-slate-500 font-medium">Loading your events...</p>
-        </div>
+        <PageLoader />
       ) : error ? (
         <div className="p-6 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-center space-y-3">
           <p className="text-xs font-bold text-red-600 dark:text-red-400">{error}</p>

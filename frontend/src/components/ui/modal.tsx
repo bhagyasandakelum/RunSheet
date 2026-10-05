@@ -58,11 +58,11 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Modal Card */}
       <div
         className={cn(
-          "relative z-10 w-full rounded-2xl bg-card border border-border p-6 shadow-2xl transition-all transform animate-in fade-in-0 zoom-in-95",
+          "relative z-10 w-full max-h-[90vh] flex flex-col rounded-2xl bg-card border border-border p-6 shadow-2xl transition-all transform animate-in fade-in-0 zoom-in-95",
           maxWidths[maxWidth]
         )}
       >
-        <div className="flex items-start justify-between pb-3 border-b border-border">
+        <div className="flex items-start justify-between pb-3 border-b border-border shrink-0">
           <div>
             {title && <h3 className="text-lg font-bold text-foreground">{title}</h3>}
             {description && (
@@ -71,7 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center justify-center"
+            className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center justify-center cursor-pointer"
             aria-label="Close modal"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,10 +80,10 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        <div className="py-4 text-sm text-foreground">{children}</div>
+        <div className="py-4 text-sm text-foreground overflow-y-auto flex-1 pr-1">{children}</div>
 
         {footer && (
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border shrink-0">
             {footer}
           </div>
         )}

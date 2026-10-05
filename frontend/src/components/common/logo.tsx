@@ -1,29 +1,50 @@
 import React from "react";
+import { cn } from "@/lib/utils/cn";
 
 export interface LogoProps {
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
+  iconOnly?: boolean;
+  className?: string;
+  textClassName?: string;
 }
 
-export const RunSheetLogo: React.FC<LogoProps> = ({ size = "md" }) => {
+export const RunSheetLogo: React.FC<LogoProps> = ({
+  size = "md",
+  iconOnly = false,
+  className,
+  textClassName,
+}) => {
   const iconSizes = {
-    sm: "w-6 h-6 text-xs",
-    md: "w-8 h-8 text-sm",
-    lg: "w-10 h-10 text-base",
+    xs: "w-6 h-6 rounded-md",
+    sm: "w-7 h-7 rounded-lg",
+    md: "w-8 h-8 rounded-lg",
+    lg: "w-10 h-10 rounded-xl",
+  };
+
+  const svgSizes = {
+    xs: "w-3.5 h-3.5",
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
   };
 
   const textSizes = {
+    xs: "text-sm",
     sm: "text-base",
-    md: "text-xl",
+    md: "text-lg",
     lg: "text-2xl",
   };
 
   return (
-    <div className="inline-flex items-center justify-center gap-2 select-none">
+    <div className={cn("inline-flex items-center justify-center gap-2 select-none", className)}>
       <div
-        className={`${iconSizes[size]} rounded-lg bg-[#44D944] text-slate-950 font-black flex items-center justify-center shadow-sm shadow-[#44D944]/30`}
+        className={cn(
+          iconSizes[size],
+          "bg-gradient-to-tr from-[#38C238] to-[#44D944] text-slate-950 flex items-center justify-center shadow-md shadow-[#44D944]/25 shrink-0"
+        )}
       >
         <svg
-          className="w-5 h-5"
+          className={svgSizes[size]}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -37,11 +58,17 @@ export const RunSheetLogo: React.FC<LogoProps> = ({ size = "md" }) => {
           />
         </svg>
       </div>
-      <span
-        className={`${textSizes[size]} font-bold tracking-tight text-slate-900 dark:text-slate-100`}
-      >
-        RunSheet
-      </span>
+      {!iconOnly && (
+        <span
+          className={cn(
+            textSizes[size],
+            "font-extrabold tracking-tight text-slate-900 dark:text-slate-100",
+            textClassName
+          )}
+        >
+          RunSheet
+        </span>
+      )}
     </div>
   );
 };

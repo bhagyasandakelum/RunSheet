@@ -7,6 +7,7 @@ import { authService } from "@/services/auth/auth-service";
 import { useToast } from "@/hooks/use-toast";
 import { RunSheetLogo } from "@/components/common/logo";
 import { ApiError } from "@/lib/api/api-error";
+import { Modal } from "@/components/ui/modal";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Compute password strength (0 to 4)
   const getPasswordStrength = (pass: string) => {
@@ -307,22 +310,162 @@ export default function RegisterPage() {
 
       {/* Footer Terms / Privacy Links */}
       <div className="flex items-center gap-2 mt-8 text-xs text-slate-400">
-        <a
-          href="#privacy"
-          onClick={(e) => e.preventDefault()}
-          className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+        <button
+          type="button"
+          onClick={() => setIsPrivacyOpen(true)}
+          className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline-offset-2 hover:underline cursor-pointer"
         >
           Privacy Policy
-        </a>
+        </button>
         <span>·</span>
-        <a
-          href="#terms"
-          onClick={(e) => e.preventDefault()}
-          className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+        <button
+          type="button"
+          onClick={() => setIsTermsOpen(true)}
+          className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors underline-offset-2 hover:underline cursor-pointer"
         >
           Terms of Service
-        </a>
+        </button>
       </div>
+
+      {/* Privacy Policy Modal */}
+      <Modal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+        title="Privacy Policy"
+        description="Effective Date: October 2026"
+        maxWidth="lg"
+        footer={
+          <button
+            type="button"
+            onClick={() => setIsPrivacyOpen(false)}
+            className="px-4 py-2 rounded-xl bg-[#44D944] hover:bg-[#38C238] active:bg-[#2EA62E] text-slate-950 font-bold text-xs shadow-md shadow-[#44D944]/20 transition-all cursor-pointer"
+          >
+            I Understand
+          </button>
+        }
+      >
+        <div className="space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              1. Information We Collect
+            </h4>
+            <p>
+              When you create an account or interact with RunSheet, we collect standard account credentials
+              including your name, email address, phone number, and event assignment data necessary for event coordination.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              2. How We Use Your Data
+            </h4>
+            <p>
+              Your information is utilized solely to facilitate event planning, manage team delegations, dispatch real-time
+              notifications, and track task execution across your designated events.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              3. Data Protection & Access Control
+            </h4>
+            <p>
+              We implement industry-standard cryptographic protections for credentials and enforce strict,
+              scoped Role-Based Access Control (RBAC). Event details and task sheets are accessible only to authorized event members.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              4. Third-Party Sharing
+            </h4>
+            <p>
+              RunSheet does not sell, lease, or distribute your personal contact information to third parties. Data is shared
+              only within the boundaries of events you choose to organize or join.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              5. Your Rights & Preferences
+            </h4>
+            <p>
+              You maintain the right to view, update, or request removal of your profile information. Notification settings
+              and team assignments can be adjusted directly from your account dashboard.
+            </p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Terms of Service Modal */}
+      <Modal
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+        title="Terms of Service"
+        description="Effective Date: October 2026"
+        maxWidth="lg"
+        footer={
+          <button
+            type="button"
+            onClick={() => setIsTermsOpen(false)}
+            className="px-4 py-2 rounded-xl bg-[#44D944] hover:bg-[#38C238] active:bg-[#2EA62E] text-slate-950 font-bold text-xs shadow-md shadow-[#44D944]/20 transition-all cursor-pointer"
+          >
+            I Accept
+          </button>
+        }
+      >
+        <div className="space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              1. Acceptance of Terms
+            </h4>
+            <p>
+              By registering an account or accessing the RunSheet platform, you agree to abide by these Terms of Service
+              and all applicable guidelines and regulations.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              2. Account Responsibilities
+            </h4>
+            <p>
+              You are responsible for maintaining the confidentiality of your credentials and for all operational actions,
+              task updates, and communications conducted through your user account.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              3. Event Coordination & Conduct
+            </h4>
+            <p>
+              Users agree to utilize event management tools, run sheets, and communication channels lawfully and respectfully.
+              Any intentional disruption of active event operations or malicious activity is strictly prohibited.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              4. Open Source & License Disclaimer
+            </h4>
+            <p>
+              RunSheet is provided under the terms of the MIT License on an &ldquo;as is&rdquo; and &ldquo;as available&rdquo;
+              basis, without warranties of any kind regarding continuous availability or uninterrupted uptime.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-1">
+              5. Termination of Access
+            </h4>
+            <p>
+              Event organizers and system administrators reserve the right to revoke event access or deactivate memberships
+              found in violation of these operational terms or platform integrity policies.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
