@@ -146,10 +146,7 @@ export const InvitationsTable: React.FC<InvitationsTableProps> = ({
             {isLoading ? (
               <tr>
                 <td colSpan={5} className="py-16 text-center text-slate-400">
-                  <PageLoader
-                    message="Loading Event Invitations..."
-                    subMessage="Retrieving invitation dispatch records and acceptance statuses"
-                  />
+                  <PageLoader />
                 </td>
               </tr>
             ) : paginatedInvitations.length === 0 ? (

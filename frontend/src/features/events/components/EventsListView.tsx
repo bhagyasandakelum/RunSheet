@@ -187,10 +187,7 @@ export const EventsListView: React.FC = () => {
 
       {/* Content Area */}
       {isLoading ? (
-        <PageLoader
-          message="Loading Your Events..."
-          subMessage="Fetching events and active runsheets from database"
-        />
+        <PageLoader />
       ) : error ? (
         <div className="p-6 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-center space-y-3">
           <p className="text-xs font-bold text-red-600 dark:text-red-400">{error}</p>

@@ -169,10 +169,7 @@ export const EventMembersTable: React.FC<EventMembersTableProps> = ({
             {isLoading ? (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-slate-400">
-                  <PageLoader
-                    message="Loading Event Members & Crew..."
-                    subMessage="Synchronizing participant permissions and team assignments"
-                  />
+                  <PageLoader />
                 </td>
               </tr>
             ) : paginatedMembers.length === 0 ? (

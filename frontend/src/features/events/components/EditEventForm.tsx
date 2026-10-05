@@ -161,12 +161,7 @@ export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
   };
 
   if (isLoading) {
-    return (
-      <PageLoader
-        message="Loading Event Details..."
-        subMessage="Synchronizing event settings from database"
-      />
-    );
+    return <PageLoader />;
   }
 
   if (!eventData) {

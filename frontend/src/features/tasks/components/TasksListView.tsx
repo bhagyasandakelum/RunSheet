@@ -350,10 +350,7 @@ export const TasksListView: React.FC = () => {
       {/* Tasks Table Card */}
       <div className="bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-xs">
         {isLoading ? (
-          <PageLoader
-            message="Loading Event Tasks & Runsheets..."
-            subMessage="Synchronizing assignments, priorities, and deadlines"
-          />
+          <PageLoader />
         ) : filteredTasks.length === 0 ? (
           <div className="py-20 text-center text-xs text-slate-400 space-y-3">
             <p>No tasks match the selected criteria.</p>

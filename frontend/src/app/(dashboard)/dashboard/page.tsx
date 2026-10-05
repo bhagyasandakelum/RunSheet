@@ -123,12 +123,7 @@ export default function DashboardPage() {
   };
 
   if (isEventsLoading) {
-    return (
-      <PageLoader
-        message="Loading RunSheet Workspace..."
-        subMessage="Synchronizing your events and active team runsheets"
-      />
-    );
+    return <PageLoader />;
   }
 
   // 0 Events State
@@ -358,10 +353,7 @@ export default function DashboardPage() {
       )}
 
       {isLoadingDashboard ? (
-        <PageLoader
-          message="Updating Dashboard Analytics..."
-          subMessage="Fetching latest metrics, team performance, and task statuses"
-        />
+        <PageLoader />
       ) : viewMode === "organizer" ? (
         /* ========================================================= */
         /* 1. ORGANIZER DASHBOARD                                   */

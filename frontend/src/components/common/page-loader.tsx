@@ -4,6 +4,8 @@ import React from "react";
 import { cn } from "@/lib/utils/cn";
 
 export interface PageLoaderProps {
+  message?: string;
+  subMessage?: string;
   fullScreen?: boolean;
   className?: string;
 }
