@@ -4,13 +4,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { eventService } from "@/services/event-service";
+import { useEvent } from "@/providers/event-provider";
 import { dashboardService, OrganizerDashboard } from "@/services/dashboard-service";
 import { Event } from "@/types/common/entities";
 import { EventStatus } from "@/types/common/enums";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { PageLoader } from "@/components/common/page-loader";
 import { EventLivePreview } from "./EventLivePreview";
 import { DeleteEventModal } from "./DeleteEventModal";
 
@@ -30,6 +31,7 @@ const ALLOWED_STATUS_TRANSITIONS: Record<EventStatus, EventStatus[]> = {
 
 export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
   const router = useRouter();
+  const { refreshEvents } = useEvent();
 
   const [eventData, setEventData] = useState<Event | null>(null);
   const [dashboardData, setDashboardData] = useState<OrganizerDashboard | null>(null);
@@ -135,11 +137,14 @@ export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
         setCurrentStatus(nextStatus);
       }
 
+      // Concurrently synchronize the event state across the entire app
+      await refreshEvents(eventId);
+
       setSuccessToast(true);
       setTimeout(() => {
         setSuccessToast(false);
         router.push(`/events/${eventId}`);
-      }, 1200);
+      }, 1000);
     } catch (err: any) {
       setApiError(
         err?.response?.data?.message || err?.message || "Failed to save changes."
@@ -151,15 +156,16 @@ export const EditEventForm: React.FC<EditEventFormProps> = ({ eventId }) => {
 
   const handleDeleteConfirm = async () => {
     await eventService.deleteEvent(eventId);
+    await refreshEvents();
     router.push("/events");
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
-        <Spinner size="lg" className="text-emerald-500" />
-        <p className="text-xs text-slate-500 font-medium">Loading event editor...</p>
-      </div>
+      <PageLoader
+        message="Loading Event Details..."
+        subMessage="Synchronizing event settings from database"
+      />
     );
   }
 

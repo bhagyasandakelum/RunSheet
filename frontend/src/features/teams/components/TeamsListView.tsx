@@ -7,6 +7,7 @@ import { teamService } from "@/services/team-service";
 import { useAuth } from "@/hooks/use-auth";
 import { Team } from "@/types/common/entities";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 import { TeamCard } from "./TeamCard";
 import { ManageTeamMembersModal } from "./ManageTeamMembersModal";
 import { DeleteTeamModal } from "./DeleteTeamModal";
@@ -204,9 +205,10 @@ export const TeamsListView: React.FC<TeamsListViewProps> = ({ initialEventId }) 
 
       {/* Teams Grid (2 Columns on desktop) */}
       {isLoading ? (
-        <div className="py-24 text-center text-xs font-semibold text-slate-400">
-          Loading teams...
-        </div>
+        <PageLoader
+          message="Loading Event Teams & Departments..."
+          subMessage="Fetching team rosters and leadership allocations"
+        />
       ) : filteredTeams.length === 0 ? (
         <div className="py-20 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-xs space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">

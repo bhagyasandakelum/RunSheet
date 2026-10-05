@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { eventService } from "@/services/event-service";
 import { teamMembershipService } from "@/services/team-membership-service";
 import { useAuth } from "@/hooks/use-auth";
+import { getAuthToken } from "@/lib/auth/cookies";
 import { Event } from "@/types/common/entities";
 
 export interface EventContextType {
@@ -14,80 +15,98 @@ export interface EventContextType {
   isOrganizer: boolean;
   isLoading: boolean;
   setSelectedEventId: (eventId: string) => void;
-  refreshEvents: () => Promise<void>;
+  refreshEvents: (preferredEventId?: string) => Promise<Event[]>;
 }
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
 export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
 
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEventId, setSelectedEventIdState] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventIdState] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("runsheet_selected_event_id");
+    }
+    return null;
+  });
   const [userTeamName, setUserTeamName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const refreshEvents = useCallback(async () => {
-    if (!isAuthenticated) {
+  const refreshEvents = useCallback(async (preferredEventId?: string): Promise<Event[]> => {
+    const token = getAuthToken();
+    if (!token && !isAuthenticated) {
       setEvents([]);
       setSelectedEventIdState(null);
       setUserTeamName(null);
       setIsLoading(false);
-      return;
+      return [];
     }
 
     try {
       setIsLoading(true);
       const data = await eventService.getMyEvents();
-      const eventList = data || [];
+      const eventList = Array.isArray(data) ? data : [];
       setEvents(eventList);
 
       if (eventList.length > 0) {
-        setSelectedEventIdState((prev) => {
-          // 1. Check if user already had a valid selection in current session
-          if (prev && eventList.some((e) => e.eventId === prev)) {
-            return prev;
-          }
+        const targetId = preferredEventId;
 
-          // 2. Check localStorage for previously saved active selection
+        // 1. If preferred ID was requested and exists in list, pick it
+        if (targetId && eventList.some((e) => e.eventId === targetId)) {
+          setSelectedEventIdState(targetId);
           if (typeof window !== "undefined") {
-            const savedId = localStorage.getItem("runsheet_selected_event_id");
-            if (savedId && eventList.some((e) => e.eventId === savedId)) {
-              return savedId;
-            }
+            localStorage.setItem("runsheet_selected_event_id", targetId);
           }
+          return eventList;
+        }
 
-          // 3. Select the event with status Active if one exists
-          const activeEvt = eventList.find(
-            (e) => (e.status as string) === "Active"
-          );
-          if (activeEvt) {
-            if (typeof window !== "undefined") {
-              localStorage.setItem("runsheet_selected_event_id", activeEvt.eventId);
-            }
-            return activeEvt.eventId;
-          }
+        // 2. Check current state / saved ID in localStorage
+        const savedId = typeof window !== "undefined" ? localStorage.getItem("runsheet_selected_event_id") : null;
+        if (savedId && eventList.some((e) => e.eventId === savedId)) {
+          setSelectedEventIdState(savedId);
+          return eventList;
+        }
 
-          // 4. Default to first event
-          const firstId = eventList[0].eventId;
+        // 3. Pick the active event
+        const activeEvt = eventList.find(
+          (e) => (e.status as string) === "Active"
+        );
+        if (activeEvt) {
+          setSelectedEventIdState(activeEvt.eventId);
           if (typeof window !== "undefined") {
-            localStorage.setItem("runsheet_selected_event_id", firstId);
+            localStorage.setItem("runsheet_selected_event_id", activeEvt.eventId);
           }
-          return firstId;
-        });
+          return eventList;
+        }
+
+        // 4. Default to the first event
+        const firstId = eventList[0].eventId;
+        setSelectedEventIdState(firstId);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("runsheet_selected_event_id", firstId);
+        }
       } else {
         setSelectedEventIdState(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("runsheet_selected_event_id");
+        }
       }
+
+      return eventList;
     } catch (err) {
       console.error("Failed to load events in EventProvider:", err);
+      return [];
     } finally {
       setIsLoading(false);
     }
   }, [isAuthenticated]);
 
   useEffect(() => {
-    refreshEvents();
-  }, [refreshEvents]);
+    if (!isAuthLoading) {
+      refreshEvents();
+    }
+  }, [refreshEvents, isAuthLoading]);
 
   // When selectedEventId or user changes, fetch user's team membership for that event
   useEffect(() => {

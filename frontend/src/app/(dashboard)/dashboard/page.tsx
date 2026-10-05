@@ -18,6 +18,7 @@ import {
   ActiveEventCard,
 } from "@/features/dashboard";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 import { invitationService } from "@/services/invitation-service";
 import { Invitation } from "@/types/common/entities";
 
@@ -123,9 +124,10 @@ export default function DashboardPage() {
 
   if (isEventsLoading) {
     return (
-      <div className="py-24 text-center text-xs font-semibold text-slate-400">
-        Loading your workspace...
-      </div>
+      <PageLoader
+        message="Loading RunSheet Workspace..."
+        subMessage="Synchronizing your events and active team runsheets"
+      />
     );
   }
 
@@ -356,9 +358,10 @@ export default function DashboardPage() {
       )}
 
       {isLoadingDashboard ? (
-        <div className="py-20 text-center text-xs font-semibold text-slate-400">
-          Updating dashboard...
-        </div>
+        <PageLoader
+          message="Updating Dashboard Analytics..."
+          subMessage="Fetching latest metrics, team performance, and task statuses"
+        />
       ) : viewMode === "organizer" ? (
         /* ========================================================= */
         /* 1. ORGANIZER DASHBOARD                                   */

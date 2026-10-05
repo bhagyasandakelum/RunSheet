@@ -6,6 +6,7 @@ import { InvitationStatus } from "@/types/common/enums";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 
 export interface InvitationsTableProps {
   invitations: Invitation[];
@@ -144,8 +145,11 @@ export const InvitationsTable: React.FC<InvitationsTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-slate-400">
-                  Loading invitations...
+                <td colSpan={5} className="py-16 text-center text-slate-400">
+                  <PageLoader
+                    message="Loading Event Invitations..."
+                    subMessage="Retrieving invitation dispatch records and acceptance statuses"
+                  />
                 </td>
               </tr>
             ) : paginatedInvitations.length === 0 ? (

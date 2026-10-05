@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEvent } from "@/providers/event-provider";
 import { useTheme } from "@/providers/theme-provider";
 import { notificationService } from "@/services/notification-service";
+import { RunSheetLogo } from "@/components/common/logo";
 import { UserMenu } from "./user-menu";
 
 export interface HeaderProps {
@@ -103,15 +104,20 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="h-16 bg-white dark:bg-[#111622] border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between gap-4 select-none">
       <div className="flex items-center gap-3">
         {onMenuToggle && (
-          <button
-            onClick={onMenuToggle}
-            className="md:hidden p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            aria-label="Toggle navigation menu"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={onMenuToggle}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <Link href="/dashboard" className="flex items-center">
+              <RunSheetLogo size="xs" iconOnly />
+            </Link>
+          </div>
         )}
 
         <div className="flex items-center gap-1.5 text-xs">

@@ -7,6 +7,7 @@ import { notificationService, NotificationStatistics } from "@/services/notifica
 import { Notification } from "@/types/common/entities";
 import { NotificationType } from "@/types/common/enums";
 import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/common/page-loader";
 import { NotificationCard } from "./NotificationCard";
 import { SendAnnouncementModal } from "./SendAnnouncementModal";
 
@@ -270,9 +271,10 @@ export const NotificationCenterView: React.FC = () => {
 
       {/* Grouped Notifications List */}
       {isLoading ? (
-        <div className="py-24 text-center text-xs font-semibold text-slate-400">
-          Loading notifications...
-        </div>
+        <PageLoader
+          message="Loading Notifications & Activity Alerts..."
+          subMessage="Fetching latest updates and real-time broadcasts"
+        />
       ) : filteredNotifications.length === 0 ? (
         <div className="py-24 text-center bg-white dark:bg-[#131B2E] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 shadow-xs space-y-3">
           <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { useEvent } from "@/providers/event-provider";
 import { useToast } from "@/hooks/use-toast";
 import { RunSheetLogo } from "@/components/common/logo";
 import { ApiError } from "@/lib/api/api-error";
@@ -11,6 +12,7 @@ import { ApiError } from "@/lib/api/api-error";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const { refreshEvents } = useEvent();
   const toast = useToast();
 
   const [email, setEmail] = useState("");
@@ -32,6 +34,7 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
+      await refreshEvents();
       toast.success("Welcome back!", "Successfully signed in to RunSheet.");
       router.push("/dashboard");
     } catch (err: unknown) {

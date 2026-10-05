@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { PageLoader } from "@/components/common/page-loader";
 
 export interface FormattedMember {
   eventMemberId: string;
@@ -167,8 +168,11 @@ export const EventMembersTable: React.FC<EventMembersTableProps> = ({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-400">
-                  Loading members...
+                <td colSpan={6} className="py-16 text-center text-slate-400">
+                  <PageLoader
+                    message="Loading Event Members & Crew..."
+                    subMessage="Synchronizing participant permissions and team assignments"
+                  />
                 </td>
               </tr>
             ) : paginatedMembers.length === 0 ? (
